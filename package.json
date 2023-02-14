@@ -2,7 +2,7 @@
   "name": "scratchmoar",
   "version": "0.0.1",
   "description": "Scratch Blocks extension that'll add local storage, devlog pages, Notion backend, scratchblocks coding, realtime collab, and Ai editing tools",
-  "main": "src/index.js",
+  "main": "docs/public/scratchmoar.js",
   "scripts": {
     "start": "vuepress dev docs",
     "docs:build": "vuepress build docs",
