@@ -21,4 +21,8 @@ class Scratchmoar {
     return 'Hello, world!'
   }
 }
-Scratch.extensions.register(new Scratchmoar())
+
+// Automatically add the extension if it's getting imported,
+// otherwise you'll have to manually run this yourself
+globalThis.Scratch && Scratch.extensions.register(new Scratchmoar())
+export default Scratchmoar
