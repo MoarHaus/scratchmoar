@@ -600,13 +600,18 @@ class Moar {
                     if (record.value === projectID) this.db.autosave.get({
                         key: "data"
                     }).then((content)=>{
+                        // console.log('content')
                         if (content.value) {
                             this.isLoading = true;
                             zip.loadAsync(content.value).then((zipContents)=>{
                                 zipContents.files["project.json"].async("uint8array").then((json)=>{
-                                    this.vm.loadProject(json, zipContents).then(()=>{
-                                        setTimeout(()=>this.isLoading = false, DEBOUNCE_TIME + 50);
-                                    });
+                                    try {
+                                        this.vm.loadProject(json).then(()=>{
+                                            setTimeout(()=>this.isLoading = false, DEBOUNCE_TIME + 50);
+                                        });
+                                    } catch (e) {
+                                        this.isLoading = false;
+                                    }
                                 });
                             });
                         }
@@ -20016,9 +20021,9 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
-*/ var Buffer = require("78d456b47354a42e").Buffer;
-var global = arguments[3];
+*/ var global = arguments[3];
 var process = require("827570b2bcdf4812");
+var Buffer = require("78d456b47354a42e").Buffer;
 !function(e) {
     module.exports = e();
 }(function() {

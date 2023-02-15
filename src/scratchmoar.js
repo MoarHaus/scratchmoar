@@ -44,13 +44,18 @@ class Moar {
           this.db.autosave.get({key: 'id'}).then(record => {
             if (record.value === projectID) {
               this.db.autosave.get({key: 'data'}).then(content => {
+                // console.log('content')
                 if (content.value) {
                   this.isLoading = true
                   zip.loadAsync(content.value).then(zipContents => {
                     zipContents.files['project.json'].async('uint8array').then(json => {
-                      this.vm.loadProject(json, zipContents).then(() => {
-                        setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
-                      })
+                      try {
+                        this.vm.loadProject(json).then(() => {
+                          setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
+                        })
+                      } catch (e) {
+                        this.isLoading = false
+                      }
                     })
                   })
                 }
