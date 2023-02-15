@@ -18,57 +18,23 @@ class Moar {
       projects: 'id,created,updated,title,*tags'
     })
     
-    // autosave
-    this.db.open().then(() => {
-      this.db.autosave.count().then(count => {
-        let path = window.location.pathname
-        let parts = path.split('/')
-        let projectID
+    // Load autosave
+    this.loadAutosave()
 
-        // Scratch: /projects/ID
-        if (parts[1] === 'projects') {
-          projectID = parts[2]
-        // Turbowarp: /ID
-        } else if (Number.isInteger(+parts[1])) {
-          projectID = parts[2]
-        // Create new
-        } else {
-          projectID = 'autosave'
-        }
-
-        // Create default record
-        if (!count) {
-          this.db.autosave.add({key: 'id', value: 'autosave'})
-        } else {
-          // this.db.autosave.update('id', {value: projectID})
-          this.db.autosave.get({key: 'id'}).then(record => {
-            if (record.value === projectID) {
-              this.db.autosave.get({key: 'data'}).then(content => {
-                // console.log('content')
-                if (content.value) {
-                  this.isLoading = true
-                  zip.loadAsync(content.value).then(zipContents => {
-                    zipContents.files['project.json'].async('uint8array').then(json => {
-                      try {
-                        this.vm.loadProject(json).then(() => {
-                          setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
-                        })
-                      } catch (e) {
-                        this.isLoading = false
-                      }
-                    })
-                  })
-                }
-              })
-            } else {
-              console.warning('Autosave ID and current project ID do not match. Skipping autoload')
-            }
-          })
-        }
-      })
-    }).catch(err => console.log('⚠️ Error opening IndexedDB:', err))
+    // Bind to CTRL+S
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === 's') {
+        this.commitAutosave()
+        e.preventDefault()
+        e.stopImmediatePropagation()
+        return false
+      }
+    }, true)
   }
   
+  /**
+   * Called automatically by Scratch
+   */
   getInfo () {
     if (!this.vm) {
       this.vm = globalThis.Scratch.vm
@@ -97,11 +63,75 @@ class Moar {
   /**
    * Autosaves every few moments
    */
-  autosave = debounce(function () {
+  autosave = debounce(function (callback) {
     this.vm.saveProjectSb3().then(content => {
-      this.db.autosave.put({key: 'data', value: content}).catch(err => console.log('⚠️ Error autosaving:', err))
+      this.db.autosave.put({key: 'data', value: content})
+        .then(() => callback && callback())
+        .catch(err => console.log('⚠️ Error autosaving:', err))
     })
   }, DEBOUNCE_TIME, {leading: false, trailing: true})
+
+  /**
+   * Load autosave
+   */
+  loadAutosave () {
+    this.db.open().then(() => {
+      this.db.autosave.count().then(count => {
+        let path = window.location.pathname
+        let parts = path.split('/')
+        let projectID
+
+        // Scratch: /projects/ID
+        if (parts[1] === 'projects') {
+          projectID = parts[2]
+        // Turbowarp: /ID
+        } else if (Number.isInteger(+parts[1])) {
+          projectID = parts[2]
+        // Create new
+        } else {
+          projectID = 'autosave'
+        }
+
+        // Create default record
+        if (!count) {
+          this.db.autosave.add({key: 'id', value: 'autosave'})
+        } else {
+          this.db.autosave.get({key: 'id'}).then(record => {
+            if (record.value === projectID) {
+              this.db.autosave.get({key: 'data'}).then(content => {
+                if (content.value) {
+                  this.isLoading = true
+                  zip.loadAsync(content.value).then(zipContents => {
+                    zipContents.files['project.json'].async('uint8array').then(json => {
+                      try {
+                        this.vm.loadProject(json).then(() => {
+                          setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
+                        })
+                      } catch (e) {
+                        this.isLoading = false
+                        console.warning('⚠️ Error loading autosave:', e)
+                      }
+                    })
+                  })
+                }
+              })
+            } else {
+              console.warning('Autosave ID and current project ID do not match. Skipping autoload')
+            }
+          })
+        }
+      })
+    }).catch(err => console.log('⚠️ Error opening IndexedDB:', err))
+  }
+
+  /**
+   * Commit an autosave
+   */
+  commitAutosave () {
+    this.autosave(() => {
+      console.log('autosaved')
+    })
+  }
 }
 
 // Automatically add the extension if it's getting imported,

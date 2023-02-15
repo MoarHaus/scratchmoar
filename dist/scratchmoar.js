@@ -578,50 +578,21 @@ class Moar {
             autosave: "&key,value",
             projects: "id,created,updated,title,*tags"
         });
-        // autosave
-        this.db.open().then(()=>{
-            this.db.autosave.count().then((count)=>{
-                let path = window.location.pathname;
-                let parts = path.split("/");
-                let projectID;
-                // Scratch: /projects/ID
-                if (parts[1] === "projects") projectID = parts[2];
-                else if (Number.isInteger(+parts[1])) projectID = parts[2];
-                else projectID = "autosave";
-                // Create default record
-                if (!count) this.db.autosave.add({
-                    key: "id",
-                    value: "autosave"
-                });
-                else // this.db.autosave.update('id', {value: projectID})
-                this.db.autosave.get({
-                    key: "id"
-                }).then((record)=>{
-                    if (record.value === projectID) this.db.autosave.get({
-                        key: "data"
-                    }).then((content)=>{
-                        // console.log('content')
-                        if (content.value) {
-                            this.isLoading = true;
-                            zip.loadAsync(content.value).then((zipContents)=>{
-                                zipContents.files["project.json"].async("uint8array").then((json)=>{
-                                    try {
-                                        this.vm.loadProject(json).then(()=>{
-                                            setTimeout(()=>this.isLoading = false, DEBOUNCE_TIME + 50);
-                                        });
-                                    } catch (e) {
-                                        this.isLoading = false;
-                                    }
-                                });
-                            });
-                        }
-                    });
-                    else console.warning("Autosave ID and current project ID do not match. Skipping autoload");
-                });
-            });
-        }).catch((err)=>console.log("⚠️ Error opening IndexedDB:", err));
+        // Load autosave
+        this.loadAutosave();
+        // Bind to CTRL+S
+        document.addEventListener("keydown", (e)=>{
+            if (e.ctrlKey && e.key === "s") {
+                this.commitAutosave();
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                return false;
+            }
+        }, true);
     }
-    getInfo() {
+    /**
+   * Called automatically by Scratch
+   */ getInfo() {
         if (!this.vm) {
             this.vm = globalThis.Scratch.vm;
             this.vm.on("PROJECT_CHANGED", ()=>this.autosave());
@@ -644,17 +615,68 @@ class Moar {
     }
     /**
    * Autosaves every few moments
-   */ autosave = (0, _lodash.debounce)(function() {
+   */ autosave = (0, _lodash.debounce)(function(callback) {
         this.vm.saveProjectSb3().then((content)=>{
             this.db.autosave.put({
                 key: "data",
                 value: content
-            }).catch((err)=>console.log("⚠️ Error autosaving:", err));
+            }).then(()=>callback && callback()).catch((err)=>console.log("⚠️ Error autosaving:", err));
         });
     }, DEBOUNCE_TIME, {
         leading: false,
         trailing: true
     });
+    /**
+   * Load autosave
+   */ loadAutosave() {
+        this.db.open().then(()=>{
+            this.db.autosave.count().then((count)=>{
+                let path = window.location.pathname;
+                let parts = path.split("/");
+                let projectID;
+                // Scratch: /projects/ID
+                if (parts[1] === "projects") projectID = parts[2];
+                else if (Number.isInteger(+parts[1])) projectID = parts[2];
+                else projectID = "autosave";
+                // Create default record
+                if (!count) this.db.autosave.add({
+                    key: "id",
+                    value: "autosave"
+                });
+                else this.db.autosave.get({
+                    key: "id"
+                }).then((record)=>{
+                    if (record.value === projectID) this.db.autosave.get({
+                        key: "data"
+                    }).then((content)=>{
+                        if (content.value) {
+                            this.isLoading = true;
+                            zip.loadAsync(content.value).then((zipContents)=>{
+                                zipContents.files["project.json"].async("uint8array").then((json)=>{
+                                    try {
+                                        this.vm.loadProject(json).then(()=>{
+                                            setTimeout(()=>this.isLoading = false, DEBOUNCE_TIME + 50);
+                                        });
+                                    } catch (e) {
+                                        this.isLoading = false;
+                                        console.warning("⚠️ Error loading autosave:", e);
+                                    }
+                                });
+                            });
+                        }
+                    });
+                    else console.warning("Autosave ID and current project ID do not match. Skipping autoload");
+                });
+            });
+        }).catch((err)=>console.log("⚠️ Error opening IndexedDB:", err));
+    }
+    /**
+   * Commit an autosave
+   */ commitAutosave() {
+        this.autosave(()=>{
+            console.log("autosaved");
+        });
+    }
 }
 // Automatically add the extension if it's getting imported,
 // otherwise you'll have to manually run this yourself
@@ -20022,8 +20044,8 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
 */ var global = arguments[3];
-var process = require("827570b2bcdf4812");
 var Buffer = require("78d456b47354a42e").Buffer;
+var process = require("827570b2bcdf4812");
 !function(e) {
     module.exports = e();
 }(function() {
