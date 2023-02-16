@@ -10,7 +10,11 @@ class Moar {
     this.vm = null
     this.runtime = null
     this.isLoading = false
+    this.platform = null
+    this.projectID = null
+  }
 
+  setup () {
     // Setup databases
     this.db = new Dexie('scratchmoar')
     this.db.version(1).stores({
@@ -21,15 +25,79 @@ class Moar {
     // Load autosave
     this.loadAutosave()
 
+    // Determine the current project ID
+    let path = window.location.pathname
+    let parts = path.split('/')
+
+    // Determine platform
+    switch (window.location.host) {
+      case 'scratch.mit.edu':
+        this.platform = 'scratch'
+      break
+      case 'turbowarp.org':
+      default:
+        this.platform = 'turbowarp'
+    }
+
+    // Scratch: /projects/ID
+    if (parts[1] === 'projects') {
+      this.projectID = parts[2]
+    // Turbowarp: /ID
+    } else if (Number.isInteger(+parts[1])) {
+      this.projectID = parts[2]
+    // Create new
+    } else {
+      this.projectID = 'autosave'
+    }
+
     // Bind to CTRL+S
     document.addEventListener('keydown', e => {
       if (e.ctrlKey && e.key === 's') {
         this.commitAutosave()
-        e.preventDefault()
-        e.stopImmediatePropagation()
-        return false
+
+        if (this.platform === 'turbowarp') {
+          e.preventDefault()
+          e.stopImmediatePropagation()
+          return false
+        }
       }
     }, true)
+    
+    // Remove existing autosave UI
+    if (this.platform === 'turbowarp') {
+      document.querySelector('[class*="menu_menu-item_"] > span')?.forEach(el => {
+        if (el.textContent === 'Save as...') {
+          el.parentNode.remove()
+        }
+      })
+    }
+  }
+
+  /**
+   * Add save button
+   */
+  addSaveButton () {
+    // Hide existing save UI and replace with our own
+    const style = document.createElement('style')
+    style.textContent = `
+      [class*="save-status_save-now_"] span {
+        display: none;
+      }
+    `
+    document.querySelector('head').appendChild(style)
+
+    // Find a menu item and copy it's classes for styling
+    const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])')
+
+    const $btn = document.createElement('div')
+    $menuItem.classList.forEach(className => $btn.classList.add(className))
+    
+    const $span = document.createElement('span')
+    $span.textContent = 'Save to browser'
+    
+    $btn.appendChild($span)
+    document.querySelector('[class*="menu-bar_account-info-group_"]').appendChild($btn)
+    $btn.addEventListener('click', () => this.commitAutosave())
   }
   
   /**
@@ -39,6 +107,8 @@ class Moar {
     if (!this.vm) {
       this.vm = globalThis.Scratch.vm
       this.vm.on('PROJECT_CHANGED', () => this.autosave())
+      this.setup()
+      this.addSaveButton()
     }
     
     this.runtime = this.vm.runtime
@@ -77,27 +147,12 @@ class Moar {
   loadAutosave () {
     this.db.open().then(() => {
       this.db.autosave.count().then(count => {
-        let path = window.location.pathname
-        let parts = path.split('/')
-        let projectID
-
-        // Scratch: /projects/ID
-        if (parts[1] === 'projects') {
-          projectID = parts[2]
-        // Turbowarp: /ID
-        } else if (Number.isInteger(+parts[1])) {
-          projectID = parts[2]
-        // Create new
-        } else {
-          projectID = 'autosave'
-        }
-
         // Create default record
         if (!count) {
           this.db.autosave.add({key: 'id', value: 'autosave'})
         } else {
           this.db.autosave.get({key: 'id'}).then(record => {
-            if (record.value === projectID) {
+            if (record.value === this.projectID) {
               this.db.autosave.get({key: 'data'}).then(content => {
                 if (content.value) {
                   this.isLoading = true
