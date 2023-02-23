@@ -2,11 +2,11 @@
   "name": "scratchmoar",
   "version": "0.0.1",
   "description": "Scratch Blocks extension that'll add local storage, devlog pages, Notion backend, scratchblocks coding, realtime collab, and Ai editing tools",
-  "main": "docs/public/scratchmoar.js",
+  "source": "src/scratchmoar.js",
+  "main": "dist/scratchmoar.js",
   "scripts": {
-    "start": "vuepress dev docs",
-    "docs:build": "vuepress build docs",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "parcel --port 8000 src/scratchmoar.js index.html",
+    "build": "parcel build"
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,15 @@
   },
   "homepage": "https://github.com/Moooar/scratchmoar#readme",
   "devDependencies": {
-    "vuepress": "^1.9.8"
+    "@parcel/transformer-vue": "^2.8.3",
+    "buffer": "^5.7.1",
+    "parcel": "^2.8.3",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
+    "dexie": "^3.2.3",
+    "jszip": "^3.10.1",
+    "lodash": "^4.17.21",
+    "vue": "^3.2.47"
   }
 }
