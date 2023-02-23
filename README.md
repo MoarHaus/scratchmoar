@@ -1,4 +1,6 @@
 # scratchmoar
+> This repo is still in development, [learn more about Scratchmoar]([https://notion](https://zenmoar.super.site/projects/scratchmoar))
+
 Unofficial Scratch and TurboWarp extension that'll add local storage, devlog pages, Notion backend, scratchblocks coding, and all new Ai tools
 
 # Requirements
