@@ -574,6 +574,8 @@ class Moar {
         this.isLoading = false;
         this.platform = null;
         this.projectID = null;
+        this.$popup = null // The main popup wrapper element
+        ;
     }
     setup() {
         // Setup databases
@@ -638,15 +640,35 @@ class Moar {
         $btn.addEventListener("click", ()=>this.commitAutosave());
     }
     /**
+   * Add load button
+   */ addLoadButton() {
+        // Find a menu item and copy it's classes for styling
+        const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])');
+        const $btn = document.createElement("div");
+        $menuItem.classList.forEach((className)=>$btn.classList.add(className));
+        const $span = document.createElement("span");
+        $span.textContent = "Load from browser";
+        $btn.appendChild($span);
+        document.querySelector('[class*="menu-bar_account-info-group_"]').appendChild($btn);
+        $btn.addEventListener("click", ()=>this.loadAutosave());
+        // Add popup
+        this.$popup = document.createElement("div");
+        this.$popup.classList.add("scratchmoar-popup");
+        this.$popup.innerHTML = `<textarea class="scratchmoar-autosaves"></textarea>`;
+        document.querySelector("body").appendChild(this.$popup);
+    }
+    /**
    * Called automatically by Scratch
    */ getInfo() {
         if (!this.vm) {
             this.vm = globalThis.Scratch.vm;
+            this.runtime = this.vm.runtime;
             this.vm.on("PROJECT_CHANGED", ()=>this.autosave());
-            this.setup();
             this.addSaveButton();
+            this.addLoadButton();
+            this.setup();
+            console.log("\uD83E\uDDE9 Scratchmoar loaded", this);
         }
-        this.runtime = this.vm.runtime;
         return {
             id: "scratchmoar",
             name: "Moooar",
@@ -725,37 +747,7 @@ class Moar {
 globalThis.Scratch && Scratch.extensions.register(new Moar());
 exports.default = Moar;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","dexie":"2sctG","lodash":"3qBDj","jszip":"gA3EN"}],"gkKU3":[function(require,module,exports) {
-exports.interopDefault = function(a) {
-    return a && a.__esModule ? a : {
-        default: a
-    };
-};
-exports.defineInteropFlag = function(a) {
-    Object.defineProperty(a, "__esModule", {
-        value: true
-    });
-};
-exports.exportAll = function(source, dest) {
-    Object.keys(source).forEach(function(key) {
-        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
-        Object.defineProperty(dest, key, {
-            enumerable: true,
-            get: function() {
-                return source[key];
-            }
-        });
-    });
-    return dest;
-};
-exports.export = function(dest, destName, get) {
-    Object.defineProperty(dest, destName, {
-        enumerable: true,
-        get: get
-    });
-};
-
-},{}],"2sctG":[function(require,module,exports) {
+},{"dexie":"2sctG","lodash":"3qBDj","jszip":"gA3EN","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2sctG":[function(require,module,exports) {
 /*
  * Dexie.js - a minimalistic wrapper for IndexedDB
  * ===============================================
@@ -5842,7 +5834,37 @@ function propagateMessageLocally(_a) {
 DexiePromise.rejectionMapper = mapError;
 setDebug(debug, dexieStackFrameFilter);
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"3qBDj":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gkKU3":[function(require,module,exports) {
+exports.interopDefault = function(a) {
+    return a && a.__esModule ? a : {
+        default: a
+    };
+};
+exports.defineInteropFlag = function(a) {
+    Object.defineProperty(a, "__esModule", {
+        value: true
+    });
+};
+exports.exportAll = function(source, dest) {
+    Object.keys(source).forEach(function(key) {
+        if (key === "default" || key === "__esModule" || dest.hasOwnProperty(key)) return;
+        Object.defineProperty(dest, key, {
+            enumerable: true,
+            get: function() {
+                return source[key];
+            }
+        });
+    });
+    return dest;
+};
+exports.export = function(dest, destName, get) {
+    Object.defineProperty(dest, destName, {
+        enumerable: true,
+        get: get
+    });
+};
+
+},{}],"3qBDj":[function(require,module,exports) {
 var global = arguments[3];
 (function() {
     /** Used as a safe reference for `undefined` in pre-ES5 environments. */ var undefined;
@@ -20085,9 +20107,9 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
-*/ var process = require("827570b2bcdf4812");
+*/ var Buffer = require("ce9f4562c5f1378").Buffer;
 var global = arguments[3];
-var Buffer = require("78d456b47354a42e").Buffer;
+var process = require("a3bd5d6f89efbfa4");
 !function(e) {
     module.exports = e();
 }(function() {
@@ -23444,15 +23466,160 @@ var Buffer = require("78d456b47354a42e").Buffer;
     ])(10);
 });
 
-},{"78d456b47354a42e":"fCgem","827570b2bcdf4812":"d5jf4"}],"fCgem":[function(require,module,exports) {
+},{"a3bd5d6f89efbfa4":"d5jf4","ce9f4562c5f1378":"fCgem"}],"d5jf4":[function(require,module,exports) {
+// shim for using process in browser
+var process = module.exports = {};
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+var cachedSetTimeout;
+var cachedClearTimeout;
+function defaultSetTimout() {
+    throw new Error("setTimeout has not been defined");
+}
+function defaultClearTimeout() {
+    throw new Error("clearTimeout has not been defined");
+}
+(function() {
+    try {
+        if (typeof setTimeout === "function") cachedSetTimeout = setTimeout;
+        else cachedSetTimeout = defaultSetTimout;
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === "function") cachedClearTimeout = clearTimeout;
+        else cachedClearTimeout = defaultClearTimeout;
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+})();
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) //normal enviroments in sane situations
+    return setTimeout(fun, 0);
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch (e) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) //normal enviroments in sane situations
+    return clearTimeout(marker);
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e) {
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e) {
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) return;
+    draining = false;
+    if (currentQueue.length) queue = currentQueue.concat(queue);
+    else queueIndex = -1;
+    if (queue.length) drainQueue();
+}
+function drainQueue() {
+    if (draining) return;
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+    var len = queue.length;
+    while(len){
+        currentQueue = queue;
+        queue = [];
+        while(++queueIndex < len)if (currentQueue) currentQueue[queueIndex].run();
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+process.nextTick = function(fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) for(var i = 1; i < arguments.length; i++)args[i - 1] = arguments[i];
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) runTimeout(drainQueue);
+};
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function() {
+    this.fun.apply(null, this.array);
+};
+process.title = "browser";
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ""; // empty string to avoid regexp issues
+process.versions = {};
+function noop() {}
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+process.listeners = function(name) {
+    return [];
+};
+process.binding = function(name) {
+    throw new Error("process.binding is not supported");
+};
+process.cwd = function() {
+    return "/";
+};
+process.chdir = function(dir) {
+    throw new Error("process.chdir is not supported");
+};
+process.umask = function() {
+    return 0;
+};
+
+},{}],"fCgem":[function(require,module,exports) {
 /*!
  * The buffer module from node.js, for the browser.
  *
  * @author   Feross Aboukhadijeh <https://feross.org>
  * @license  MIT
  */ /* eslint-disable no-proto */ "use strict";
-var base64 = require("60b84cae8fcb58b6");
-var ieee754 = require("e0bb215e694ea4e4");
+var base64 = require("82cf20260f5ed0ed");
+var ieee754 = require("849f3e62a242c49b");
 var customInspectSymbol = typeof Symbol === "function" && typeof Symbol["for"] === "function" // eslint-disable-line dot-notation
  ? Symbol["for"]("nodejs.util.inspect.custom") // eslint-disable-line dot-notation
  : null;
@@ -24674,7 +24841,7 @@ var hexSliceLookupTable = function() {
     return table;
 }();
 
-},{"60b84cae8fcb58b6":"eIiSV","e0bb215e694ea4e4":"cO95r"}],"eIiSV":[function(require,module,exports) {
+},{"82cf20260f5ed0ed":"eIiSV","849f3e62a242c49b":"cO95r"}],"eIiSV":[function(require,module,exports) {
 "use strict";
 exports.byteLength = byteLength;
 exports.toByteArray = toByteArray;
@@ -24842,151 +25009,6 @@ exports.write = function(buffer, value, offset, isLE, mLen, nBytes) {
     eLen += mLen;
     for(; eLen > 0; buffer[offset + i] = e & 0xff, i += d, e /= 256, eLen -= 8);
     buffer[offset + i - d] |= s * 128;
-};
-
-},{}],"d5jf4":[function(require,module,exports) {
-// shim for using process in browser
-var process = module.exports = {};
-// cached from whatever global is present so that test runners that stub it
-// don't break things.  But we need to wrap it in a try catch in case it is
-// wrapped in strict mode code which doesn't define any globals.  It's inside a
-// function because try/catches deoptimize in certain engines.
-var cachedSetTimeout;
-var cachedClearTimeout;
-function defaultSetTimout() {
-    throw new Error("setTimeout has not been defined");
-}
-function defaultClearTimeout() {
-    throw new Error("clearTimeout has not been defined");
-}
-(function() {
-    try {
-        if (typeof setTimeout === "function") cachedSetTimeout = setTimeout;
-        else cachedSetTimeout = defaultSetTimout;
-    } catch (e) {
-        cachedSetTimeout = defaultSetTimout;
-    }
-    try {
-        if (typeof clearTimeout === "function") cachedClearTimeout = clearTimeout;
-        else cachedClearTimeout = defaultClearTimeout;
-    } catch (e) {
-        cachedClearTimeout = defaultClearTimeout;
-    }
-})();
-function runTimeout(fun) {
-    if (cachedSetTimeout === setTimeout) //normal enviroments in sane situations
-    return setTimeout(fun, 0);
-    // if setTimeout wasn't available but was latter defined
-    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
-        cachedSetTimeout = setTimeout;
-        return setTimeout(fun, 0);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedSetTimeout(fun, 0);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
-            return cachedSetTimeout.call(null, fun, 0);
-        } catch (e) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
-            return cachedSetTimeout.call(this, fun, 0);
-        }
-    }
-}
-function runClearTimeout(marker) {
-    if (cachedClearTimeout === clearTimeout) //normal enviroments in sane situations
-    return clearTimeout(marker);
-    // if clearTimeout wasn't available but was latter defined
-    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
-        cachedClearTimeout = clearTimeout;
-        return clearTimeout(marker);
-    }
-    try {
-        // when when somebody has screwed with setTimeout but no I.E. maddness
-        return cachedClearTimeout(marker);
-    } catch (e) {
-        try {
-            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
-            return cachedClearTimeout.call(null, marker);
-        } catch (e) {
-            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
-            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
-            return cachedClearTimeout.call(this, marker);
-        }
-    }
-}
-var queue = [];
-var draining = false;
-var currentQueue;
-var queueIndex = -1;
-function cleanUpNextTick() {
-    if (!draining || !currentQueue) return;
-    draining = false;
-    if (currentQueue.length) queue = currentQueue.concat(queue);
-    else queueIndex = -1;
-    if (queue.length) drainQueue();
-}
-function drainQueue() {
-    if (draining) return;
-    var timeout = runTimeout(cleanUpNextTick);
-    draining = true;
-    var len = queue.length;
-    while(len){
-        currentQueue = queue;
-        queue = [];
-        while(++queueIndex < len)if (currentQueue) currentQueue[queueIndex].run();
-        queueIndex = -1;
-        len = queue.length;
-    }
-    currentQueue = null;
-    draining = false;
-    runClearTimeout(timeout);
-}
-process.nextTick = function(fun) {
-    var args = new Array(arguments.length - 1);
-    if (arguments.length > 1) for(var i = 1; i < arguments.length; i++)args[i - 1] = arguments[i];
-    queue.push(new Item(fun, args));
-    if (queue.length === 1 && !draining) runTimeout(drainQueue);
-};
-// v8 likes predictible objects
-function Item(fun, array) {
-    this.fun = fun;
-    this.array = array;
-}
-Item.prototype.run = function() {
-    this.fun.apply(null, this.array);
-};
-process.title = "browser";
-process.browser = true;
-process.env = {};
-process.argv = [];
-process.version = ""; // empty string to avoid regexp issues
-process.versions = {};
-function noop() {}
-process.on = noop;
-process.addListener = noop;
-process.once = noop;
-process.off = noop;
-process.removeListener = noop;
-process.removeAllListeners = noop;
-process.emit = noop;
-process.prependListener = noop;
-process.prependOnceListener = noop;
-process.listeners = function(name) {
-    return [];
-};
-process.binding = function(name) {
-    throw new Error("process.binding is not supported");
-};
-process.cwd = function() {
-    return "/";
-};
-process.chdir = function(dir) {
-    throw new Error("process.chdir is not supported");
-};
-process.umask = function() {
-    return 0;
 };
 
 },{}]},["lTkX9","9Smt2"], "9Smt2", "parcelRequire995d")

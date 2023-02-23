@@ -12,6 +12,8 @@ class Moar {
     this.isLoading = false
     this.platform = null
     this.projectID = null
+
+    this.$popup = null // The main popup wrapper element
   }
 
   setup () {
@@ -99,6 +101,31 @@ class Moar {
     document.querySelector('[class*="menu-bar_account-info-group_"]').appendChild($btn)
     $btn.addEventListener('click', () => this.commitAutosave())
   }
+
+  /**
+   * Add load button
+   */
+  addLoadButton () {
+    // Find a menu item and copy it's classes for styling
+    const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])')
+
+    const $btn = document.createElement('div')
+    $menuItem.classList.forEach(className => $btn.classList.add(className))
+    
+    const $span = document.createElement('span')
+    $span.textContent = 'Load from browser'
+    
+    $btn.appendChild($span)
+    document.querySelector('[class*="menu-bar_account-info-group_"]').appendChild($btn)
+    $btn.addEventListener('click', () => this.loadAutosave())
+
+    // Add popup
+    this.$popup = document.createElement('div')
+    this.$popup.classList.add('scratchmoar-popup')
+    this.$popup.innerHTML = `<textarea class="scratchmoar-autosaves"></textarea>`
+
+    document.querySelector('body').appendChild(this.$popup)
+  }
   
   /**
    * Called automatically by Scratch
@@ -106,12 +133,14 @@ class Moar {
   getInfo () {
     if (!this.vm) {
       this.vm = globalThis.Scratch.vm
+      this.runtime = this.vm.runtime
       this.vm.on('PROJECT_CHANGED', () => this.autosave())
-      this.setup()
+
       this.addSaveButton()
+      this.addLoadButton()
+      this.setup()
+      console.log('🧩 Scratchmoar loaded', this)
     }
-    
-    this.runtime = this.vm.runtime
 
     return {
       id: 'scratchmoar',
