@@ -9556,14 +9556,37 @@ parcelHelpers.export(exports, "render", ()=>render);
 var _vue = require("vue");
 const _hoisted_1 = {
     ref: "menu",
-    class: "menu-bar_menu-bar-item_scratchmoar menu-bar_hoverable_scratchmoar"
+    class: "menu-bar_menu-bar-item_scratchmoar"
 };
-const _hoisted_2 = /*#__PURE__*/ (0, _vue.createStaticVNode)('<span>Scratchmoar</span><div class="menu-bar_menu-bar-menu_scratchmoar"><ul class="menu_menu_scratchmoar menu_right_scratchmoar"><li class="menu_menu-item_scratchmoar menu_hoverable_scratchmoar menu_menu-section_scratchmoar"><span>New</span></li><li class="menu_menu-item_scratchmoar menu_hoverable_scratchmoar menu_menu-section_scratchmoar">Load from your computer </li><li class="menu_menu-item_scratchmoar menu_hoverable_scratchmoar"><span>Save as...</span></li><li class="menu_menu-item_scratchmoar menu_hoverable_scratchmoar"><span>Save to separate file...</span></li><li class="menu_menu-item_scratchmoar menu_hoverable_scratchmoar menu_menu-section_scratchmoar"><span>Package project</span></li><li class="menu_menu-item_scratchmoar menu_hoverable_scratchmoar menu_menu-section_scratchmoar"><span>Load restore point</span></li></ul></div>', 2);
-const _hoisted_4 = [
-    _hoisted_2
+const _hoisted_2 = /*#__PURE__*/ (0, _vue.createElementVNode)("span", null, "Scratchmoar", -1 /* HOISTED */ );
+const _hoisted_3 = {
+    class: "menu-bar_menu-bar-menu_scratchmoar"
+};
+const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Save locally", -1 /* HOISTED */ );
+const _hoisted_5 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Load from your computer", -1 /* HOISTED */ );
+const _hoisted_6 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Save as...", -1 /* HOISTED */ );
+const _hoisted_7 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Save to separate file...", -1 /* HOISTED */ );
+const _hoisted_8 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Package project", -1 /* HOISTED */ );
+const _hoisted_9 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Load restore point", -1 /* HOISTED */ );
+const _hoisted_10 = [
+    _hoisted_4,
+    _hoisted_5,
+    _hoisted_6,
+    _hoisted_7,
+    _hoisted_8,
+    _hoisted_9
 ];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-    return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", _hoisted_1, _hoisted_4, 512 /* NEED_PATCH */ );
+    return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", _hoisted_1, [
+        _hoisted_2,
+        (0, _vue.createElementVNode)("div", _hoisted_3, [
+            (0, _vue.createElementVNode)("ul", {
+                class: (0, _vue.normalizeClass)({
+                    scratchmoarHidden: !_ctx.isVisible
+                })
+            }, _hoisted_10, 2 /* CLASS */ )
+        ])
+    ], 512 /* NEED_PATCH */ );
 }
 if (module.hot) module.hot.accept(()=>{
     __VUE_HMR_RUNTIME__.rerender("13f3c2-hmr", render);
@@ -9579,6 +9602,8 @@ exports.default = (script)=>{};
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _vue = require("vue");
+var _stylesCssJs = require("./styles.css.js");
+var _stylesCssJsDefault = parcelHelpers.interopDefault(_stylesCssJs);
 exports.default = {
     __name: "App",
     setup (__props, { expose  }) {
@@ -9591,36 +9616,11 @@ exports.default = {
             $menuItem.classList.forEach((className)=>menu.value.classList.add(className));
             // Manually add styles
             const $styles = document.createElement("style");
-            $styles.innerHTML = `
-  .menu-bar_menu-bar-menu_scratchmoar {
-    position: absolute;
-    top: 48px;
-    left: -100% !important;
-    margin-left: 2.5em !important;
-  }
-
-  .menu-bar_menu-bar-menu_scratchmoar ul {
-    position: relative;
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    z-index: 999999;
-    background: #aaa;
-  }
-
-  .menu-bar_menu-bar-menu_scratchmoar li {
-    padding: 0 10px;
-    line-height: 34px;
-  }
-
-  .menu-bar_menu-bar-menu_scratchmoar li:hover {
-    opacity: 0.8
-  }
-  `;
+            $styles.innerHTML = (0, _stylesCssJsDefault.default);
             document.querySelector("body").appendChild($styles);
             // Manually match list item styles
             let styles = getComputedStyle(document.querySelector('[class*="gui_page-wrapper_"] > [class*="menu-bar_menu-bar"]'));
-            const $menuItems = document.querySelectorAll(".menu_menu-item_scratchmoar");
+            const $menuItems = document.querySelectorAll(".menu-bar_menu-bar-item_scratchmoar li");
             $menuItems.forEach(($menuItem)=>{
                 $menuItem.style.backgroundColor = styles.backgroundColor;
             });
@@ -9628,7 +9628,10 @@ exports.default = {
         const __returned__ = {
             menu,
             ref: (0, _vue.ref),
-            onMounted: (0, _vue.onMounted)
+            onMounted: (0, _vue.onMounted),
+            get $STYLES () {
+                return 0, _stylesCssJsDefault.default;
+            }
         };
         Object.defineProperty(__returned__, "__isScriptSetup", {
             enumerable: false,
@@ -9638,6 +9641,42 @@ exports.default = {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","vue":"gzxs9"}]},["lTkX9","9Smt2"], "9Smt2", "parcelRequire995d")
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","vue":"gzxs9","./styles.css.js":"2BAGs"}],"2BAGs":[function(require,module,exports) {
+/**
+ * @fixme Running into issues getting CSS working with parcel so for now
+ * doing it this way
+ */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
+parcelHelpers.defineInteropFlag(exports);
+exports.default = `
+.menu-bar_menu-bar-menu_scratchmoar {
+  position: absolute;
+  top: 48px;
+  left: -100% !important;
+  margin-left: 2.5em !important;
+}
+
+.menu-bar_menu-bar-menu_scratchmoar ul {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  z-index: 999999;
+  background: #aaa;
+}
+
+.menu-bar_menu-bar-menu_scratchmoar li {
+  padding: 0 10px;
+  line-height: 34px;
+}
+
+.menu-bar_menu-bar-menu_scratchmoar li:hover {
+  opacity: 0.8
+}
+
+.scratchmoar-hidden {
+  display: none;
+}`;
+
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lTkX9","9Smt2"], "9Smt2", "parcelRequire995d")
 
 //# sourceMappingURL=scratchmoar.js.map
