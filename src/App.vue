@@ -19,9 +19,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import Snapshots from './store/snapshots.js'
 
 const menu = ref(null)
-const isVisible = ref(false)
+const isVisible = ref(true)
 
 onMounted(() => {
   // Add matching classes for styling purposes
