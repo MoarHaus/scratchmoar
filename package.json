@@ -5,7 +5,7 @@
   "source": "src/scratchmoar.js",
   "main": "dist/scratchmoar.js",
   "scripts": {
-    "start": "parcel --port 8000 src/scratchmoar.js",
+    "start": "parcel --port 8000 src/scratchmoar.js index.html",
     "build": "parcel build"
   },
   "repository": {
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Moooar/scratchmoar#readme",
   "devDependencies": {
+    "@parcel/transformer-vue": "^2.8.3",
     "buffer": "^5.7.1",
     "parcel": "^2.8.3",
     "process": "^0.11.10"
@@ -26,6 +27,7 @@
   "dependencies": {
     "dexie": "^3.2.3",
     "jszip": "^3.10.1",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "vue": "^3.2.47"
   }
 }
