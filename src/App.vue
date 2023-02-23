@@ -11,6 +11,8 @@
       <div class="scratchmoarPopupContentBody"></div>
       <div class="scratchmoarPopupContentFooter">
         <button @click="isVisible = false">Close</button>
+        <button @click="clearData()">Clear data</button>
+        <button style="float: right">Save snapshot</button>
       </div>
     </div>
   </div>
@@ -36,4 +38,11 @@ onMounted(() => {
     $menuItem.style.backgroundColor = styles.backgroundColor
   })
 })
+
+/**
+ * Trigger a clear data event
+ */
+function clearData () {
+  document.dispatchEvent(new CustomEvent('scratchmoarResetDB'))
+}
 </script>

@@ -591,14 +591,16 @@ class Scratchmoar {
     /**
    * Setup the extension
    */ setup() {
-        // resetDB if ?reset is present in URL
-        if (window.location.search.includes("reset")) this.resetDB();
+        // resetDB if ?reset is present in URL and redirect to same URL without reset
+        if (window.location.search.includes("reset")) {
+            this.resetDB();
+            window.location = window.location.href.replace("?reset", "");
+        }
         // Reference virtual machine
         this.vm = globalThis.Scratch.vm;
         this.runtime = this.vm.runtime;
         this.db = (0, _snapshotsJsDefault.default);
         globalThis.scratchmoar = this;
-        console.log((0, _snapshotsJsDefault.default));
         // Mount Vue
         this.app = (0, _vue.createApp)((0, _appVueDefault.default));
         this.app.mount('[class*="menu-bar_account-info-group_"]');
@@ -606,13 +608,14 @@ class Scratchmoar {
         const $styles = document.createElement("style");
         $styles.innerHTML = (0, _stylesCssJsDefault.default);
         document.querySelector("body").appendChild($styles);
+        // Custom event listeners
+        document.addEventListener("scratchmoarResetDB", this.resetDB.bind(this));
         console.log("\uD83E\uDDE9 Scratchmoar extension loaded!");
     }
     /**
    * Reset the database
    */ resetDB() {
         this.db.delete();
-        console.log("reset");
     }
 }
 // Automatically add the extension if it's getting imported,
@@ -9587,6 +9590,11 @@ const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("div", {
 const _hoisted_5 = {
     class: "scratchmoarPopupContentFooter"
 };
+const _hoisted_6 = /*#__PURE__*/ (0, _vue.createElementVNode)("button", {
+    style: {
+        "float": "right"
+    }
+}, "Save snapshot", -1 /* HOISTED */ );
 function render(_ctx, _cache, $props, $setup, $data, $options) {
     return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", _hoisted_1, [
         (0, _vue.createElementVNode)("span", {
@@ -9608,7 +9616,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                 (0, _vue.createElementVNode)("div", _hoisted_5, [
                     (0, _vue.createElementVNode)("button", {
                         onClick: _cache[2] || (_cache[2] = ($event)=>$setup.isVisible = false)
-                    }, "Close")
+                    }, "Close"),
+                    (0, _vue.createElementVNode)("button", {
+                        onClick: _cache[3] || (_cache[3] = ($event)=>$setup.clearData())
+                    }, "Clear data"),
+                    _hoisted_6
                 ])
             ])
         ], 2 /* CLASS */ )
@@ -9647,9 +9659,15 @@ exports.default = {
                 $menuItem.style.backgroundColor = styles.backgroundColor;
             });
         });
+        /**
+ * Trigger a clear data event
+ */ function clearData() {
+            document.dispatchEvent(new CustomEvent("scratchmoarResetDB"));
+        }
         const __returned__ = {
             menu,
             isVisible,
+            clearData,
             ref: (0, _vue.ref),
             onMounted: (0, _vue.onMounted),
             get Snapshots () {

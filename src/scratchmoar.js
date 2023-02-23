@@ -36,9 +36,10 @@ class Scratchmoar {
    * Setup the extension
    */
   setup () {
-    // resetDB if ?reset is present in URL
+    // resetDB if ?reset is present in URL and redirect to same URL without reset
     if (window.location.search.includes('reset')) {
       this.resetDB()
+      window.location = window.location.href.replace('?reset', '')
     }
 
     // Reference virtual machine
@@ -46,7 +47,6 @@ class Scratchmoar {
     this.runtime = this.vm.runtime
     this.db = Snapshots
     globalThis.scratchmoar = this
-    console.log(Snapshots)
     
     // Mount Vue
     this.app = createApp(App)
@@ -57,6 +57,9 @@ class Scratchmoar {
     $styles.innerHTML = $STYLES
     document.querySelector('body').appendChild($styles)
 
+    // Custom event listeners
+    document.addEventListener('scratchmoarResetDB', this.resetDB.bind(this))
+
     console.log('🧩 Scratchmoar extension loaded!')
   }
 
@@ -65,7 +68,6 @@ class Scratchmoar {
    */
   resetDB () {
     this.db.delete()
-    console.log('reset')
   }
 }
 
