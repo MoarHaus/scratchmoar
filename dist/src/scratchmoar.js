@@ -9554,37 +9554,29 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "render", ()=>render);
 var _vue = require("vue");
-const _hoisted_1 = {
-    ref: "menu",
-    class: "menu-bar_menu-bar-item_scratchmoar"
-};
-const _hoisted_2 = /*#__PURE__*/ (0, _vue.createElementVNode)("span", null, "Scratchmoar", -1 /* HOISTED */ );
-const _hoisted_3 = {
+const _hoisted_1 = /*#__PURE__*/ (0, _vue.createElementVNode)("span", null, "Scratchmoar", -1 /* HOISTED */ );
+const _hoisted_2 = {
     class: "menu-bar_menu-bar-menu_scratchmoar"
 };
-const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Save locally", -1 /* HOISTED */ );
-const _hoisted_5 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Load from your computer", -1 /* HOISTED */ );
-const _hoisted_6 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Save as...", -1 /* HOISTED */ );
-const _hoisted_7 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Save to separate file...", -1 /* HOISTED */ );
-const _hoisted_8 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Package project", -1 /* HOISTED */ );
-const _hoisted_9 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Load restore point", -1 /* HOISTED */ );
-const _hoisted_10 = [
-    _hoisted_4,
-    _hoisted_5,
-    _hoisted_6,
-    _hoisted_7,
-    _hoisted_8,
-    _hoisted_9
+const _hoisted_3 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Take snapshot (CTRL + S)", -1 /* HOISTED */ );
+const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Load snapshot", -1 /* HOISTED */ );
+const _hoisted_5 = [
+    _hoisted_3,
+    _hoisted_4
 ];
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-    return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", _hoisted_1, [
-        _hoisted_2,
-        (0, _vue.createElementVNode)("div", _hoisted_3, [
+    return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", {
+        ref: "menu",
+        class: "menu-bar_menu-bar-item_scratchmoar",
+        onClick: _cache[0] || (_cache[0] = ($event)=>$setup.isVisible = !$setup.isVisible)
+    }, [
+        _hoisted_1,
+        (0, _vue.createElementVNode)("div", _hoisted_2, [
             (0, _vue.createElementVNode)("ul", {
                 class: (0, _vue.normalizeClass)({
-                    scratchmoarHidden: !_ctx.isVisible
+                    scratchmoarHidden: !$setup.isVisible
                 })
-            }, _hoisted_10, 2 /* CLASS */ )
+            }, _hoisted_5, 2 /* CLASS */ )
         ])
     ], 512 /* NEED_PATCH */ );
 }
@@ -9609,10 +9601,10 @@ exports.default = {
     setup (__props, { expose  }) {
         expose();
         const menu = (0, _vue.ref)(null);
+        const isVisible = (0, _vue.ref)(false);
         (0, _vue.onMounted)(()=>{
             // Add matching classes for styling purposes
             const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])');
-            console.log(menu);
             $menuItem.classList.forEach((className)=>menu.value.classList.add(className));
             // Manually add styles
             const $styles = document.createElement("style");
@@ -9627,6 +9619,7 @@ exports.default = {
         });
         const __returned__ = {
             menu,
+            isVisible,
             ref: (0, _vue.ref),
             onMounted: (0, _vue.onMounted),
             get $STYLES () {
@@ -9652,7 +9645,7 @@ exports.default = `
   position: absolute;
   top: 48px;
   left: -100% !important;
-  margin-left: 2.5em !important;
+  margin-left: 2em !important;
 }
 
 .menu-bar_menu-bar-menu_scratchmoar ul {
@@ -9673,7 +9666,7 @@ exports.default = `
   opacity: 0.8
 }
 
-.scratchmoar-hidden {
+.scratchmoarHidden {
   display: none;
 }`;
 

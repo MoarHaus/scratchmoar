@@ -7,7 +7,7 @@ export default `
   position: absolute;
   top: 48px;
   left: -100% !important;
-  margin-left: 2.5em !important;
+  margin-left: 2em !important;
 }
 
 .menu-bar_menu-bar-menu_scratchmoar ul {
@@ -28,6 +28,6 @@ export default `
   opacity: 0.8
 }
 
-.scratchmoar-hidden {
+.scratchmoarHidden {
   display: none;
 }`
