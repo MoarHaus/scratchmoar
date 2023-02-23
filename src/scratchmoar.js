@@ -1,5 +1,6 @@
 import {createApp} from 'vue'
 import App from './App.vue'
+import $STYLES from './styles.css.js'
 
 class Scratchmoar {
   /**
@@ -40,14 +41,12 @@ class Scratchmoar {
     this.app = createApp(App)
     this.app.mount('[class*="menu-bar_account-info-group_"]')
     
+    // Manually add styles
+    const $styles = document.createElement('style')
+    $styles.innerHTML = $STYLES
+    document.querySelector('body').appendChild($styles)
+
     console.log('🧩 Scratchmoar extension loaded!')
-
-    // Add custom styles
-    const style = document.createElement('style')
-    style.innerHTML = `
-
-    `
-    document.querySelector('body').appendChild(style)
   }
 }
 

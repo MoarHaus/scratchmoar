@@ -562,6 +562,8 @@ parcelHelpers.defineInteropFlag(exports);
 var _vue = require("vue");
 var _appVue = require("./App.vue");
 var _appVueDefault = parcelHelpers.interopDefault(_appVue);
+var _stylesCssJs = require("./styles.css.js");
+var _stylesCssJsDefault = parcelHelpers.interopDefault(_stylesCssJs);
 class Scratchmoar {
     /**
    * Entry point for extension
@@ -591,13 +593,11 @@ class Scratchmoar {
         this.runtime = this.vm.runtime;
         this.app = (0, _vue.createApp)((0, _appVueDefault.default));
         this.app.mount('[class*="menu-bar_account-info-group_"]');
+        // Manually add styles
+        const $styles = document.createElement("style");
+        $styles.innerHTML = (0, _stylesCssJsDefault.default);
+        document.querySelector("body").appendChild($styles);
         console.log("\uD83E\uDDE9 Scratchmoar extension loaded!");
-        // Add custom styles
-        const style = document.createElement("style");
-        style.innerHTML = `
-
-    `;
-        document.querySelector("body").appendChild(style);
     }
 }
 // Automatically add the extension if it's getting imported,
@@ -605,7 +605,7 @@ class Scratchmoar {
 globalThis.Scratch && Scratch.extensions.register(new Scratchmoar());
 exports.default = Scratchmoar;
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","vue":"gzxs9","./App.vue":"fYNyc"}],"gkKU3":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","vue":"gzxs9","./App.vue":"fYNyc","./styles.css.js":"2BAGs"}],"gkKU3":[function(require,module,exports) {
 exports.interopDefault = function(a) {
     return a && a.__esModule ? a : {
         default: a
@@ -9554,30 +9554,49 @@ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 parcelHelpers.export(exports, "render", ()=>render);
 var _vue = require("vue");
-const _hoisted_1 = /*#__PURE__*/ (0, _vue.createElementVNode)("span", null, "Scratchmoar", -1 /* HOISTED */ );
-const _hoisted_2 = {
-    class: "menu-bar_menu-bar-menu_scratchmoar"
+const _hoisted_1 = {
+    ref: "menu",
+    class: "menu-bar_menu-bar-item_scratchmoar"
 };
-const _hoisted_3 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Take snapshot (CTRL + S)", -1 /* HOISTED */ );
-const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("li", null, "Load snapshot", -1 /* HOISTED */ );
-const _hoisted_5 = [
-    _hoisted_3,
-    _hoisted_4
-];
+const _hoisted_2 = {
+    class: "scratchmoarPopupContent"
+};
+const _hoisted_3 = /*#__PURE__*/ (0, _vue.createElementVNode)("div", {
+    class: "scratchmoarPopupContentHeader"
+}, [
+    /*#__PURE__*/ (0, _vue.createElementVNode)("h2", null, "Scratchmoar Settings")
+], -1 /* HOISTED */ );
+const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("div", {
+    class: "scratchmoarPopupContentBody"
+}, null, -1 /* HOISTED */ );
+const _hoisted_5 = {
+    class: "scratchmoarPopupContentFooter"
+};
 function render(_ctx, _cache, $props, $setup, $data, $options) {
-    return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", {
-        ref: "menu",
-        class: "menu-bar_menu-bar-item_scratchmoar",
-        onClick: _cache[0] || (_cache[0] = ($event)=>$setup.isVisible = !$setup.isVisible)
-    }, [
-        _hoisted_1,
-        (0, _vue.createElementVNode)("div", _hoisted_2, [
-            (0, _vue.createElementVNode)("ul", {
-                class: (0, _vue.normalizeClass)({
-                    scratchmoarHidden: !$setup.isVisible
-                })
-            }, _hoisted_5, 2 /* CLASS */ )
-        ])
+    return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("div", _hoisted_1, [
+        (0, _vue.createElementVNode)("span", {
+            onClick: _cache[0] || (_cache[0] = ($event)=>$setup.isVisible = !$setup.isVisible)
+        }, "Scratchmoar"),
+        (0, _vue.createElementVNode)("div", {
+            class: (0, _vue.normalizeClass)({
+                scratchmoarHidden: !$setup.isVisible,
+                scratchmoarPopup: true
+            })
+        }, [
+            (0, _vue.createElementVNode)("div", {
+                class: "scratchmoarOverlay",
+                onClick: _cache[1] || (_cache[1] = ($event)=>$setup.isVisible = false)
+            }),
+            (0, _vue.createElementVNode)("div", _hoisted_2, [
+                _hoisted_3,
+                _hoisted_4,
+                (0, _vue.createElementVNode)("div", _hoisted_5, [
+                    (0, _vue.createElementVNode)("button", {
+                        onClick: _cache[2] || (_cache[2] = ($event)=>$setup.isVisible = false)
+                    }, "Close")
+                ])
+            ])
+        ], 2 /* CLASS */ )
     ], 512 /* NEED_PATCH */ );
 }
 if (module.hot) module.hot.accept(()=>{
@@ -9594,8 +9613,6 @@ exports.default = (script)=>{};
 var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 var _vue = require("vue");
-var _stylesCssJs = require("./styles.css.js");
-var _stylesCssJsDefault = parcelHelpers.interopDefault(_stylesCssJs);
 exports.default = {
     __name: "App",
     setup (__props, { expose  }) {
@@ -9606,10 +9623,6 @@ exports.default = {
             // Add matching classes for styling purposes
             const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])');
             $menuItem.classList.forEach((className)=>menu.value.classList.add(className));
-            // Manually add styles
-            const $styles = document.createElement("style");
-            $styles.innerHTML = (0, _stylesCssJsDefault.default);
-            document.querySelector("body").appendChild($styles);
             // Manually match list item styles
             let styles = getComputedStyle(document.querySelector('[class*="gui_page-wrapper_"] > [class*="menu-bar_menu-bar"]'));
             const $menuItems = document.querySelectorAll(".menu-bar_menu-bar-item_scratchmoar li");
@@ -9621,10 +9634,7 @@ exports.default = {
             menu,
             isVisible,
             ref: (0, _vue.ref),
-            onMounted: (0, _vue.onMounted),
-            get $STYLES () {
-                return 0, _stylesCssJsDefault.default;
-            }
+            onMounted: (0, _vue.onMounted)
         };
         Object.defineProperty(__returned__, "__isScriptSetup", {
             enumerable: false,
@@ -9634,41 +9644,77 @@ exports.default = {
     }
 };
 
-},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","vue":"gzxs9","./styles.css.js":"2BAGs"}],"2BAGs":[function(require,module,exports) {
+},{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3","vue":"gzxs9"}],"2BAGs":[function(require,module,exports) {
 /**
  * @fixme Running into issues getting CSS working with parcel so for now
  * doing it this way
  */ var parcelHelpers = require("@parcel/transformer-js/src/esmodule-helpers.js");
 parcelHelpers.defineInteropFlag(exports);
 exports.default = `
-.menu-bar_menu-bar-menu_scratchmoar {
-  position: absolute;
-  top: 48px;
-  left: -100% !important;
-  margin-left: 2em !important;
+.menu-bar_menu-bar-item_scratchmoar {
+  padding: 0 !important;
 }
 
-.menu-bar_menu-bar-menu_scratchmoar ul {
-  position: relative;
-  padding: 0;
-  margin: 0;
-  list-style: none;
-  z-index: 999999;
-  background: #aaa;
-}
-
-.menu-bar_menu-bar-menu_scratchmoar li {
-  padding: 0 10px;
-  line-height: 34px;
-}
-
-.menu-bar_menu-bar-menu_scratchmoar li:hover {
-  opacity: 0.8
+.menu-bar_menu-bar-item_scratchmoar > span {
+  padding: 0 0.75rem;
+  display: inline-block;
+  line-height: 2.5rem;
 }
 
 .scratchmoarHidden {
   display: none;
-}`;
+}
+
+.scratchmoarPopup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.scratchmoarPopup > .scratchmoarOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.75);
+}
+
+.scratchmoarPopup > .scratchmoarPopupContent {
+  position: absolute;
+  cursor: initial;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--ui-tertiary, #fff);
+  max-height: 80%;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  width: 600px;
+  max-width: 100%;
+  overflow: auto;
+
+  display: flex;
+  flex-direction: column;
+}
+.scratchmoarPopupContent {
+  color: #000;
+}
+[theme="dark"] .scratchmoarPopupContent {
+  color: #fff;
+}
+
+.scratchmoarPopupContentBody {
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.scratchmoarPopup button {
+  padding: 1rem;
+}
+`;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}]},["lTkX9","9Smt2"], "9Smt2", "parcelRequire995d")
 
