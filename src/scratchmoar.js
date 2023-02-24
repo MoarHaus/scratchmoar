@@ -21,6 +21,10 @@ class Scratchmoar {
     this.platform = null // Platform (scratch, turbowarp)
     this.projectID = null // Project ID from URL
     this.isLoading = false
+
+    this.$selectors = {
+      projectTitle: 'input[class*="project-title-input_title-field_"]',
+    }
   }
   
   /**
@@ -148,6 +152,7 @@ class Scratchmoar {
   saveSnapshot () {
     this.vm.saveProjectSb3().then(content => {
       this.db.snapshots.add({
+        title: document.querySelector(this.$selectors.projectTitle).value,
         date: new Date(),
         data: content
       }).then(id => {
@@ -174,7 +179,10 @@ class Scratchmoar {
       zip.loadAsync(snapshot.data).then(zipContents => {
         zipContents.files['project.json'].async('uint8array').then(content => {
           this.vm.loadProject(content)
-            .then(() => document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject')))
+            .then(() => {
+              document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
+              document.querySelector(this.$selectors.projectTitle).value = snapshot.title || 'Untitled'
+            })
             .catch(err => console.log('⚠️ Error loading project:', err))
             .finally(() => this.isLoading = false)
         })
@@ -193,7 +201,16 @@ class Scratchmoar {
         zip.loadAsync(content.value).then(zipContents => {
           zipContents.files['project.json'].async('uint8array').then(json => {
             this.vm.loadProject(json)
-              .then(() => setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50))
+              .then(() => {
+                setTimeout(() => {
+                  this.isLoading = false
+                  this.db.settings.get({key: 'lastSnapshotID'}).then(snapshot => {
+                    this.db.snapshots.where('id').equals(snapshot.value).first().then(snapshot => {
+                      document.querySelector(this.$selectors.projectTitle).value = snapshot.title || 'Untitled'
+                    })
+                  })
+                }, DEBOUNCE_TIME + 50)
+              })
               .catch(() => console.warning('⚠️ Error loading autosave:', e))
               .finally(() => this.isLoading = false)
           })

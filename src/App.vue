@@ -12,8 +12,9 @@
         <table>
           <thead>
             <tr>
-              <th>Snapshot ID</th>
-              <th>Created</th>
+              <th width="40px">ID</th>
+              <th width="100px">Title</th>
+              <th width="100px">Created</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -21,9 +22,10 @@
             <tr v-for="snapshot in snapshots" :key="snapshot.id" :class="{scratchmoarSelected: lastSnapshotID?.value === snapshot.id}">
               <td>{{ snapshot.id }}</td>
               <!-- Display date in YY-MM-DD HH:MM format -->
+              <td>{{ snapshot.title }}</td>
               <td>{{ new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, ' ') }}</td>
               <td>
-                <button @click="deleteSnapshot(snapshot.id)">Delete</button>
+                <button @click="deleteSnapshot(snapshot.id)" style="margin-right: 2rem">Delete</button>
                 <button @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
               </td>
             </tr>
@@ -33,7 +35,7 @@
       <div class="scratchmoarPopupContentFooter">
         <button @click="isVisible = false">Close</button>
         <button @click="clearSnapshots()" style="margin-left: 2rem">Delete all snapshots</button>
-        <button @click="saveSnapshots()" style="float: right">Save snapshot</button>
+        <button @click="saveSnapshots()" style="float: right">Save new snapshot</button>
       </div>
     </div>
   </div>
