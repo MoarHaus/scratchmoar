@@ -9,7 +9,21 @@
         <h2>Scratchmoar Settings</h2>
       </div>
       <div class="scratchmoarPopupContentBody">
-        <select size="10"></select>
+        <table>
+          <thead>
+            <tr>
+              <th>Snapshot ID</th>
+              <th>Created</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr v-for="snapshot in snapshots" :key="snapshot.id">
+              <td>{{ snapshot.id }}</td>
+              <!-- Display date in YY-MM-DD HH:MM format -->
+              <td>{{ new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, ' ') }}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div class="scratchmoarPopupContentFooter">
         <button @click="isVisible = false">Close</button>
@@ -24,12 +38,15 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Snapshots from './store/snapshots.js'
-import {liveQuery} from 'dexie'
+import { liveQuery } from 'dexie'
 import { useObservable } from '@vueuse/rxjs'
 
 const menu = ref(null)
 const isVisible = ref(true)
-let snapshots = ref([])
+let selectedSnapshot = ref(null)
+let snapshots = ref(useObservable(liveQuery(() => {
+  return Snapshots.snapshots.toArray()
+})))
 
 onMounted(() => {
   // Add matching classes for styling purposes
@@ -42,13 +59,6 @@ onMounted(() => {
   $menuItems.forEach($menuItem => {
     $menuItem.style.backgroundColor = styles.backgroundColor
   })
-
-  // Create a livequery for the snapshots
-  snapshots = useObservable(liveQuery(async () => {
-    const snaps = await Snapshots.toArray()
-    console.log('snapshots', snaps)
-    return snaps
-  }))
 })
 
 /**

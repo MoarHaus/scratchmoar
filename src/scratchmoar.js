@@ -135,15 +135,19 @@ class Scratchmoar {
    * Reset the database
    */
   resetDB () {
-    this.db.delete()
+    this.db.autosave.clear()
+    this.db.snapshots.clear()
   }
 
   /**
    * Save a snapshot
    */
   saveSnapshot () {
-    this.autosave(() => {
-      console.log('autosaved')
+    this.vm.saveProjectSb3().then(content => {
+      this.db.snapshots.add({
+        date: new Date(),
+        data: content
+      }).catch(err => console.log('⚠️ Error autosaving:', err))
     })
   }
 
@@ -188,10 +192,9 @@ class Scratchmoar {
   /**
    * Autosaves every few moments
    */
-  autosave = debounce(function (callback) {
+  autosave = debounce(function () {
     this.vm.saveProjectSb3().then(content => {
       this.db.autosave.put({key: 'data', value: content})
-        .then(() => callback && callback())
         .catch(err => console.log('⚠️ Error autosaving:', err))
     })
   }, DEBOUNCE_TIME, {leading: false, trailing: true})

@@ -671,13 +671,17 @@ const DEBOUNCE_TIME = 250;
     /**
    * Reset the database
    */ resetDB() {
-        this.db.delete();
+        this.db.autosave.clear();
+        this.db.snapshots.clear();
     }
     /**
    * Save a snapshot
    */ saveSnapshot() {
-        this.autosave(()=>{
-            console.log("autosaved");
+        this.vm.saveProjectSb3().then((content)=>{
+            this.db.snapshots.add({
+                date: new Date(),
+                data: content
+            }).catch((err)=>console.log("⚠️ Error autosaving:", err));
         });
     }
     /**
@@ -719,12 +723,12 @@ const DEBOUNCE_TIME = 250;
     }
     /**
    * Autosaves every few moments
-   */ autosave = (0, _lodash.debounce)(function(callback) {
+   */ autosave = (0, _lodash.debounce)(function() {
         this.vm.saveProjectSb3().then((content)=>{
             this.db.autosave.put({
                 key: "data",
                 value: content
-            }).then(()=>callback && callback()).catch((err)=>console.log("⚠️ Error autosaving:", err));
+            }).catch((err)=>console.log("⚠️ Error autosaving:", err));
         });
     }, DEBOUNCE_TIME, {
         leading: false,
@@ -9697,14 +9701,16 @@ const _hoisted_3 = /*#__PURE__*/ (0, _vue.createElementVNode)("div", {
 }, [
     /*#__PURE__*/ (0, _vue.createElementVNode)("h2", null, "Scratchmoar Settings")
 ], -1 /* HOISTED */ );
-const _hoisted_4 = /*#__PURE__*/ (0, _vue.createElementVNode)("div", {
+const _hoisted_4 = {
     class: "scratchmoarPopupContentBody"
-}, [
-    /*#__PURE__*/ (0, _vue.createElementVNode)("select", {
-        size: "10"
-    })
+};
+const _hoisted_5 = /*#__PURE__*/ (0, _vue.createElementVNode)("thead", null, [
+    /*#__PURE__*/ (0, _vue.createElementVNode)("tr", null, [
+        /*#__PURE__*/ (0, _vue.createElementVNode)("th", null, "Snapshot ID"),
+        /*#__PURE__*/ (0, _vue.createElementVNode)("th", null, "Created")
+    ])
 ], -1 /* HOISTED */ );
-const _hoisted_5 = {
+const _hoisted_6 = {
     class: "scratchmoarPopupContentFooter"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -9724,8 +9730,23 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
             }),
             (0, _vue.createElementVNode)("div", _hoisted_2, [
                 _hoisted_3,
-                _hoisted_4,
-                (0, _vue.createElementVNode)("div", _hoisted_5, [
+                (0, _vue.createElementVNode)("div", _hoisted_4, [
+                    (0, _vue.createElementVNode)("table", null, [
+                        _hoisted_5,
+                        (0, _vue.createElementVNode)("tbody", null, [
+                            ((0, _vue.openBlock)(true), (0, _vue.createElementBlock)((0, _vue.Fragment), null, (0, _vue.renderList)($setup.snapshots, (snapshot)=>{
+                                return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("tr", {
+                                    key: snapshot.id
+                                }, [
+                                    (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(snapshot.id), 1 /* TEXT */ ),
+                                    (0, _vue.createCommentVNode)(" Display date in YY-MM-DD HH:MM format "),
+                                    (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, " ")), 1 /* TEXT */ )
+                                ]);
+                            }), 128 /* KEYED_FRAGMENT */ ))
+                        ])
+                    ])
+                ]),
+                (0, _vue.createElementVNode)("div", _hoisted_6, [
                     (0, _vue.createElementVNode)("button", {
                         onClick: _cache[2] || (_cache[2] = ($event)=>$setup.isVisible = false)
                     }, "Close"),
@@ -9767,7 +9788,10 @@ exports.default = {
         expose();
         const menu = (0, _vue.ref)(null);
         const isVisible = (0, _vue.ref)(true);
-        let snapshots = (0, _vue.ref)([]);
+        let selectedSnapshot = (0, _vue.ref)(null);
+        let snapshots = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
+            return (0, _snapshotsJsDefault.default).snapshots.toArray();
+        })));
         (0, _vue.onMounted)(()=>{
             // Add matching classes for styling purposes
             const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])');
@@ -9778,12 +9802,6 @@ exports.default = {
             $menuItems.forEach(($menuItem)=>{
                 $menuItem.style.backgroundColor = styles.backgroundColor;
             });
-            // Create a livequery for the snapshots
-            snapshots = (0, _rxjs.useObservable)((0, _dexie.liveQuery)(async ()=>{
-                const snaps = await (0, _snapshotsJsDefault.default).toArray();
-                console.log("snapshots", snaps);
-                return snaps;
-            }));
         });
         /**
  * Trigger a clear data event
@@ -9798,6 +9816,12 @@ exports.default = {
         const __returned__ = {
             menu,
             isVisible,
+            get selectedSnapshot () {
+                return selectedSnapshot;
+            },
+            set selectedSnapshot (v){
+                selectedSnapshot = v;
+            },
             get snapshots () {
                 return snapshots;
             },
@@ -9835,7 +9859,7 @@ const db = new (0, _dexieDefault.default)("scratchmoar");
 exports.default = db;
 db.version(1).stores({
     autosave: "&key, value",
-    snapshots: "++id, parentId, created, title, description, *tags"
+    snapshots: "++id, parentId, date, title, description, *tags"
 });
 
 },{"dexie":"2sctG","@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"2sctG":[function(require,module,exports) {
@@ -19305,6 +19329,23 @@ exports.default = `
   width: 100%;
   display: block;
 }
+
+.scratchmoarPopupContentBody table {
+  width: 100%;
+  text-align: left;
+}
+
+.scratchmoarPopupContentBody table td,
+.scratchmoarPopupContentBody table th {
+  padding: 1em;
+  border: 1px solid #aaa;
+}
+.scratchmoarPopupContentBody table th {
+  background: #999a;
+}
+.scratchmoarPopupContentBody table tr:hover {
+  background: #eeea
+}
 `;
 
 },{"@parcel/transformer-js/src/esmodule-helpers.js":"gkKU3"}],"gA3EN":[function(require,module,exports) {
@@ -19318,9 +19359,9 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
-*/ var global = arguments[3];
-var Buffer = require("ce9f4562c5f1378").Buffer;
+*/ var Buffer = require("ce9f4562c5f1378").Buffer;
 var process = require("a3bd5d6f89efbfa4");
+var global = arguments[3];
 !function(e) {
     module.exports = e();
 }(function() {

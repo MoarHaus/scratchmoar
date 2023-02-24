@@ -4,5 +4,5 @@ export default db
 
 db.version(1).stores({
   autosave: '&key, value',
-  snapshots: '++id, parentId, created, title, description, *tags'
+  snapshots: '++id, parentId, date, title, description, *tags'
 })

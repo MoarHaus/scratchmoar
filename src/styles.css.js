@@ -71,4 +71,21 @@ export default `
   width: 100%;
   display: block;
 }
+
+.scratchmoarPopupContentBody table {
+  width: 100%;
+  text-align: left;
+}
+
+.scratchmoarPopupContentBody table td,
+.scratchmoarPopupContentBody table th {
+  padding: 1em;
+  border: 1px solid #aaa;
+}
+.scratchmoarPopupContentBody table th {
+  background: #999a;
+}
+.scratchmoarPopupContentBody table tr:hover {
+  background: #eeea
+}
 `
