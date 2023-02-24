@@ -8,11 +8,13 @@
       <div class="scratchmoarPopupContentHeader">
         <h2>Scratchmoar Settings</h2>
       </div>
-      <div class="scratchmoarPopupContentBody"></div>
+      <div class="scratchmoarPopupContentBody">
+        <select size="10"></select>
+      </div>
       <div class="scratchmoarPopupContentFooter">
         <button @click="isVisible = false">Close</button>
-        <button @click="clearData()">Clear data</button>
-        <button style="float: right">Save snapshot</button>
+        <button @click="clearSnapshots()">Clear data</button>
+        <button @click="saveSnapshots()" style="float: right">Save snapshot</button>
       </div>
     </div>
   </div>
@@ -22,9 +24,12 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import Snapshots from './store/snapshots.js'
+import {liveQuery} from 'dexie'
+import { useObservable } from '@vueuse/rxjs'
 
 const menu = ref(null)
 const isVisible = ref(true)
+let snapshots = ref([])
 
 onMounted(() => {
   // Add matching classes for styling purposes
@@ -37,12 +42,26 @@ onMounted(() => {
   $menuItems.forEach($menuItem => {
     $menuItem.style.backgroundColor = styles.backgroundColor
   })
+
+  // Create a livequery for the snapshots
+  snapshots = useObservable(liveQuery(async () => {
+    const snaps = await Snapshots.toArray()
+    console.log('snapshots', snaps)
+    return snaps
+  }))
 })
 
 /**
  * Trigger a clear data event
  */
-function clearData () {
+function clearSnapshots () {
   document.dispatchEvent(new CustomEvent('scratchmoarResetDB'))
+}
+
+/**
+ * Trigger a save snapshot event
+ */
+function saveSnapshots () {
+  document.dispatchEvent(new CustomEvent('scratchmoarSaveSnapshot'))
 }
 </script>

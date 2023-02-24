@@ -66,4 +66,9 @@ export default `
 .scratchmoarPopup button {
   padding: 1rem;
 }
+
+.scratchmoarPopupContentBody select {
+  width: 100%;
+  display: block;
+}
 `

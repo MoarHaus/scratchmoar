@@ -1,9 +1,27 @@
+import JSZip from 'jszip'
+import {debounce} from 'lodash'
 import {createApp} from 'vue'
-import App from './App.vue'
 import $STYLES from './styles.css.js'
+import App from './App.vue'
 import Snapshots from './store/snapshots.js'
 
+const zip = new JSZip()
+const DEBOUNCE_TIME = 250
+
+/**
+ * Scrtachmoar extension
+ */
 class Scratchmoar {
+  constructor () {
+    this.vm = null // Virtual machine
+    this.runtime = null // Runtime
+    this.db = null // Database
+    this.app = null // Vue app
+    this.platform = null // Platform (scratch, turbowarp)
+    this.projectID = null // Project ID from URL
+    this.isLoading = false
+  }
+  
   /**
    * Entry point for extension
    */
@@ -57,8 +75,58 @@ class Scratchmoar {
     $styles.innerHTML = $STYLES
     document.querySelector('body').appendChild($styles)
 
+    // Determine the current project ID
+    let path = window.location.pathname
+    let parts = path.split('/')
+
+    // Determine platform
+    switch (window.location.host) {
+      case 'scratch.mit.edu':
+        this.platform = 'scratch'
+      break
+      case 'turbowarp.org':
+      default:
+        this.platform = 'turbowarp'
+    }
+
+    // Scratch: /projects/ID
+    if (parts[1] === 'projects') {
+      this.projectID = parts[2]
+    // Turbowarp: /ID
+    } else if (Number.isInteger(+parts[1])) {
+      this.projectID = parts[2]
+    // Create new
+    } else {
+      this.projectID = 'autosave'
+    }
+
+    // Bind to CTRL+S
+    document.addEventListener('keydown', e => {
+      if (e.ctrlKey && e.key === 's') {
+        this.saveSnapshot()
+
+        if (this.platform === 'turbowarp') {
+          e.preventDefault()
+          e.stopImmediatePropagation()
+          return false
+        }
+      }
+    }, true)
+    
+    // Remove existing autosave UI
+    if (this.platform === 'turbowarp') {
+      document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach(el => {
+        if (el.textContent === 'Save as...') {
+          // el.parentNode.remove()
+        }
+      })
+    }
+
     // Custom event listeners
+    this.loadAutosave()
     document.addEventListener('scratchmoarResetDB', this.resetDB.bind(this))
+    document.addEventListener('scratchmoarSaveSnapshot', this.saveSnapshot.bind(this))
+    this.vm.on('PROJECT_CHANGED', () => this.autosave())
 
     console.log('🧩 Scratchmoar extension loaded!')
   }
@@ -69,6 +137,64 @@ class Scratchmoar {
   resetDB () {
     this.db.delete()
   }
+
+  /**
+   * Save a snapshot
+   */
+  saveSnapshot () {
+    this.autosave(() => {
+      console.log('autosaved')
+    })
+  }
+
+  /**
+   * Load autosave
+   */
+  loadAutosave () {
+    this.db.open().then(() => {
+      this.db.autosave.count().then(count => {
+        // Create default record
+        if (!count) {
+          this.db.autosave.add({key: 'id', value: 'autosave'})
+        } else {
+          this.db.autosave.get({key: 'id'}).then(record => {
+            if (record.value === this.projectID) {
+              this.db.autosave.get({key: 'data'}).then(content => {
+                if (content.value) {
+                  this.isLoading = true
+                  zip.loadAsync(content.value).then(zipContents => {
+                    zipContents.files['project.json'].async('uint8array').then(json => {
+                      try {
+                        this.vm.loadProject(json).then(() => {
+                          setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
+                        })
+                      } catch (e) {
+                        this.isLoading = false
+                        console.warning('⚠️ Error loading autosave:', e)
+                      }
+                    })
+                  })
+                }
+              })
+            } else {
+              console.warning('Autosave ID and current project ID do not match. Skipping autoload')
+            }
+          })
+        }
+      })
+    }).catch(err => console.log('⚠️ Error opening IndexedDB:', err))
+  }
+
+  /**
+   * Autosaves every few moments
+   */
+  autosave = debounce(function (callback) {
+    this.vm.saveProjectSb3().then(content => {
+      this.db.autosave.put({key: 'data', value: content})
+        .then(() => callback && callback())
+        .catch(err => console.log('⚠️ Error autosaving:', err))
+    })
+  }, DEBOUNCE_TIME, {leading: false, trailing: true})
 }
 
 // Automatically add the extension if it's getting imported,
