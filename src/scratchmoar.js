@@ -102,17 +102,17 @@ class Scratchmoar {
     }
 
     // Bind to CTRL+S
-    document.addEventListener('keydown', e => {
-      if (e.ctrlKey && e.key === 's') {
-        this.saveSnapshot()
+    // document.addEventListener('keydown', e => {
+    //   if (e.ctrlKey && e.key === 's') {
+    //     this.saveSnapshot()
 
-        if (this.platform === 'turbowarp') {
-          e.preventDefault()
-          e.stopImmediatePropagation()
-          return false
-        }
-      }
-    }, true)
+    //     if (this.platform === 'turbowarp') {
+    //       e.preventDefault()
+    //       e.stopImmediatePropagation()
+    //       return false
+    //     }
+    //   }
+    // }, true)
     
     // Remove existing autosave UI
     if (this.platform === 'turbowarp') {

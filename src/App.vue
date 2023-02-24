@@ -32,7 +32,7 @@
       </div>
       <div class="scratchmoarPopupContentFooter">
         <button @click="isVisible = false">Close</button>
-        <button @click="clearSnapshots()">Clear data</button>
+        <button @click="clearSnapshots()" style="margin-left: 2rem">Delete all snapshots</button>
         <button @click="saveSnapshots()" style="float: right">Save snapshot</button>
       </div>
     </div>
@@ -48,7 +48,7 @@ import { useObservable } from '@vueuse/rxjs'
 
 const vm = getCurrentInstance()
 const menu = ref(null)
-const isVisible = ref(true)
+const isVisible = ref(false)
 const forceRenderer = ref(false) // For forcing a re-render
 let snapshots = ref(useObservable(liveQuery(() => {
   return Snapshots.snapshots.toArray()

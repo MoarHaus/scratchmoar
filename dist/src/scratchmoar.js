@@ -648,16 +648,16 @@ const DEBOUNCE_TIME = 250;
         else if (Number.isInteger(+parts[1])) this.projectID = parts[2];
         else this.projectID = "autosave";
         // Bind to CTRL+S
-        document.addEventListener("keydown", (e1)=>{
-            if (e1.ctrlKey && e1.key === "s") {
-                this.saveSnapshot();
-                if (this.platform === "turbowarp") {
-                    e1.preventDefault();
-                    e1.stopImmediatePropagation();
-                    return false;
-                }
-            }
-        }, true);
+        // document.addEventListener('keydown', e => {
+        //   if (e.ctrlKey && e.key === 's') {
+        //     this.saveSnapshot()
+        //     if (this.platform === 'turbowarp') {
+        //       e.preventDefault()
+        //       e.stopImmediatePropagation()
+        //       return false
+        //     }
+        //   }
+        // }, true)
         // Remove existing autosave UI
         if (this.platform === "turbowarp") document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach((el)=>{
             el.textContent;
@@ -9781,8 +9781,11 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                         onClick: _cache[2] || (_cache[2] = ($event)=>$setup.isVisible = false)
                     }, "Close"),
                     (0, _vue.createElementVNode)("button", {
-                        onClick: _cache[3] || (_cache[3] = ($event)=>$setup.clearSnapshots())
-                    }, "Clear data"),
+                        onClick: _cache[3] || (_cache[3] = ($event)=>$setup.clearSnapshots()),
+                        style: {
+                            "margin-left": "2rem"
+                        }
+                    }, "Delete all snapshots"),
                     (0, _vue.createElementVNode)("button", {
                         onClick: _cache[4] || (_cache[4] = ($event)=>$setup.saveSnapshots()),
                         style: {
@@ -9818,7 +9821,7 @@ exports.default = {
         expose();
         const vm = (0, _vue.getCurrentInstance)();
         const menu = (0, _vue.ref)(null);
-        const isVisible = (0, _vue.ref)(true);
+        const isVisible = (0, _vue.ref)(false);
         const forceRenderer = (0, _vue.ref)(false) // For forcing a re-render
         ;
         let snapshots = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
