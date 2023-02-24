@@ -700,10 +700,12 @@ const DEBOUNCE_TIME = 250;
     /**
    * Load a snapshot
    */ loadSnapshot(ev) {
-        console.log("Loading snapshot", ev.detail);
         this.db.snapshots.get(ev.detail).then((snapshot)=>{
-            console.log("Snapshot:", snapshot);
             this.isLoading = true;
+            this.db.settings.put({
+                key: "lastSnapshotID",
+                value: snapshot.id
+            });
             zip.loadAsync(snapshot.data).then((zipContents)=>{
                 zipContents.files["project.json"].async("uint8array").then((content)=>{
                     this.vm.loadProject(content).then(()=>document.dispatchEvent(new CustomEvent("scratchmoarLoadedProject"))).catch((err)=>console.log("⚠️ Error loading project:", err)).finally(()=>this.isLoading = false);
@@ -730,7 +732,7 @@ const DEBOUNCE_TIME = 250;
     }
     /**
    * Autosaves every few moments
-   */ autosave = (0, _lodash.debounce)(function() {
+   */ autosave = (0, _lodash.debounce)(function(a, b, c) {
         this.vm.saveProjectSb3().then((content)=>{
             this.db.settings.put({
                 key: "autosave",
@@ -9750,7 +9752,10 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                         (0, _vue.createElementVNode)("tbody", null, [
                             ((0, _vue.openBlock)(true), (0, _vue.createElementBlock)((0, _vue.Fragment), null, (0, _vue.renderList)($setup.snapshots, (snapshot)=>{
                                 return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("tr", {
-                                    key: snapshot.id
+                                    key: snapshot.id,
+                                    class: (0, _vue.normalizeClass)({
+                                        scratchmoarSelected: $setup.lastSnapshotID?.value === snapshot.id
+                                    })
                                 }, [
                                     (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(snapshot.id), 1 /* TEXT */ ),
                                     (0, _vue.createCommentVNode)(" Display date in YY-MM-DD HH:MM format "),
@@ -9766,7 +9771,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                                             }
                                         }, "Load", 8 /* PROPS */ , _hoisted_7)
                                     ])
-                                ]);
+                                ], 2 /* CLASS */ );
                             }), 128 /* KEYED_FRAGMENT */ ))
                         ])
                     ])
@@ -9811,14 +9816,28 @@ exports.default = {
     __name: "App",
     setup (__props, { expose  }) {
         expose();
+        const vm = (0, _vue.getCurrentInstance)();
         const menu = (0, _vue.ref)(null);
-        const isVisible = (0, _vue.ref)(false);
-        let selectedSnapshot = (0, _vue.ref)(null);
+        const isVisible = (0, _vue.ref)(true);
+        const forceRenderer = (0, _vue.ref)(false) // For forcing a re-render
+        ;
         let snapshots = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
             return (0, _snapshotsJsDefault.default).snapshots.toArray();
         })));
-        let settings = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
-            return (0, _snapshotsJsDefault.default).settings.toArray();
+        /**
+ * Observe settings
+ * Also sets lastSnapshotID
+ */ let lastSnapshotID = (0, _vue.ref)(null);
+        let settings = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(async ()=>{
+            const data = await (0, _snapshotsJsDefault.default).settings.toArray();
+            // Find first {key: 'lastSnapshotID'} and set lastSnapshotID
+            if (data && data.length) lastSnapshotID = data.find((setting)=>{
+                if (setting.key === "lastSnapshotID") {
+                    vm.proxy.$forceUpdate();
+                    return setting.value;
+                }
+            });
+            return data;
         })));
         (0, _vue.onMounted)(()=>{
             // Add matching classes for styling purposes
@@ -9842,6 +9861,7 @@ exports.default = {
  * Trigger a save snapshot event
  */ function saveSnapshots() {
             document.dispatchEvent(new CustomEvent("scratchmoarSaveSnapshot"));
+            isVisible.value = false;
         }
         /**
  * Trigger a load snapshot event
@@ -9858,19 +9878,21 @@ exports.default = {
             }));
         }
         const __returned__ = {
+            vm,
             menu,
             isVisible,
-            get selectedSnapshot () {
-                return selectedSnapshot;
-            },
-            set selectedSnapshot (v){
-                selectedSnapshot = v;
-            },
+            forceRenderer,
             get snapshots () {
                 return snapshots;
             },
             set snapshots (v){
                 snapshots = v;
+            },
+            get lastSnapshotID () {
+                return lastSnapshotID;
+            },
+            set lastSnapshotID (v){
+                lastSnapshotID = v;
             },
             get settings () {
                 return settings;
@@ -9884,6 +9906,7 @@ exports.default = {
             deleteSnapshot,
             ref: (0, _vue.ref),
             onMounted: (0, _vue.onMounted),
+            getCurrentInstance: (0, _vue.getCurrentInstance),
             get Snapshots () {
                 return 0, _snapshotsJsDefault.default;
             },
@@ -19397,6 +19420,10 @@ exports.default = `
 }
 .scratchmoarPopupContentBody table tr:hover {
   background: #eeea
+}
+
+.scratchmoarSelected {
+  background: #0a04;
 }
 `;
 

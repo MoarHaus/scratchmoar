@@ -88,4 +88,8 @@ export default `
 .scratchmoarPopupContentBody table tr:hover {
   background: #eeea
 }
+
+.scratchmoarSelected {
+  background: #0a04;
+}
 `

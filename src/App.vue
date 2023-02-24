@@ -18,7 +18,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="snapshot in snapshots" :key="snapshot.id">
+            <tr v-for="snapshot in snapshots" :key="snapshot.id" :class="{scratchmoarSelected: lastSnapshotID?.value === snapshot.id}">
               <td>{{ snapshot.id }}</td>
               <!-- Display date in YY-MM-DD HH:MM format -->
               <td>{{ new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, ' ') }}</td>
@@ -41,20 +41,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
 import Snapshots from './store/snapshots.js'
 import { liveQuery } from 'dexie'
 import { useObservable } from '@vueuse/rxjs'
 
+const vm = getCurrentInstance()
 const menu = ref(null)
-const isVisible = ref(false)
-let selectedSnapshot = ref(null)
+const isVisible = ref(true)
+const forceRenderer = ref(false) // For forcing a re-render
 let snapshots = ref(useObservable(liveQuery(() => {
   return Snapshots.snapshots.toArray()
 })))
 
-let settings = ref(useObservable(liveQuery(() => {
-  return Snapshots.settings.toArray()
+/**
+ * Observe settings
+ * Also sets lastSnapshotID
+ */
+let lastSnapshotID = ref(null)
+let settings = ref(useObservable(liveQuery(async () => {
+  const data = await Snapshots.settings.toArray()
+  
+  // Find first {key: 'lastSnapshotID'} and set lastSnapshotID
+  if (data && data.length) {
+    lastSnapshotID = data.find(setting => {
+      if (setting.key === 'lastSnapshotID') {
+        vm.proxy.$forceUpdate()
+        return setting.value
+      }
+    })
+  }
+
+  return data
 })))
 
 onMounted(() => {
@@ -85,6 +103,7 @@ function clearSnapshots () {
  */
 function saveSnapshots () {
   document.dispatchEvent(new CustomEvent('scratchmoarSaveSnapshot'))
+  isVisible.value = false
 }
 
 /**

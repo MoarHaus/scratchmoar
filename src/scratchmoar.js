@@ -167,10 +167,10 @@ class Scratchmoar {
    * Load a snapshot
    */
   loadSnapshot (ev) {
-    console.log('Loading snapshot', ev.detail)
     this.db.snapshots.get(ev.detail).then(snapshot => {
-      console.log('Snapshot:', snapshot)
       this.isLoading = true
+      this.db.settings.put({key: 'lastSnapshotID', value: snapshot.id})
+      
       zip.loadAsync(snapshot.data).then(zipContents => {
         zipContents.files['project.json'].async('uint8array').then(content => {
           this.vm.loadProject(content)
@@ -205,7 +205,7 @@ class Scratchmoar {
   /**
    * Autosaves every few moments
    */
-  autosave = debounce(function () {
+  autosave = debounce(function (a, b, c) {
     this.vm.saveProjectSb3().then(content => {
       this.db.settings.put({key: 'autosave', value: content})
         .catch(err => console.log('⚠️ Error autosaving:', err))
