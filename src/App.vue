@@ -47,13 +47,12 @@ import { liveQuery } from 'dexie'
 import { useObservable } from '@vueuse/rxjs'
 
 const menu = ref(null)
-const isVisible = ref(true)
+const isVisible = ref(false)
 let selectedSnapshot = ref(null)
 let snapshots = ref(useObservable(liveQuery(() => {
   return Snapshots.snapshots.toArray()
 })))
 
-// <pre>{{ JSON.stringify(settings, null, 2) }}</pre>
 let settings = ref(useObservable(liveQuery(() => {
   return Snapshots.settings.toArray()
 })))

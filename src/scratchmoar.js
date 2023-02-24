@@ -174,9 +174,7 @@ class Scratchmoar {
       zip.loadAsync(snapshot.data).then(zipContents => {
         zipContents.files['project.json'].async('uint8array').then(content => {
           this.vm.loadProject(content)
-            .then(() => {
-              document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
-            })
+            .then(() => document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject')))
             .catch(err => console.log('⚠️ Error loading project:', err))
             .finally(() => this.isLoading = false)
         })
@@ -188,38 +186,20 @@ class Scratchmoar {
    * Load autosave
    */
   loadAutosave () {
-    this.db.open().then(() => {
-      // this.db.settings.count().then(count => {
-      //   // Create default record
-      //   if (!count) {
-      //     this.db.settings.add({key: 'id', value: 'autosave'})
-      //   } else {
-      //     this.db.settings.get({key: 'id'}).then(record => {
-      //       if (record.value === this.projectID) {
-      //         this.db.settings.get({key: 'data'}).then(content => {
-      //           if (content.value) {
-      //             this.isLoading = true
-      //             zip.loadAsync(content.value).then(zipContents => {
-      //               zipContents.files['project.json'].async('uint8array').then(json => {
-      //                 try {
-      //                   this.vm.loadProject(json).then(() => {
-      //                     setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
-      //                   })
-      //                 } catch (e) {
-      //                   this.isLoading = false
-      //                   console.warning('⚠️ Error loading autosave:', e)
-      //                 }
-      //               })
-      //             })
-      //           }
-      //         })
-      //       } else {
-      //         console.warning('Autosave ID and current project ID do not match. Skipping autoload')
-      //       }
-      //     })
-      //   }
-      // })
-    }).catch(err => console.log('⚠️ Error opening IndexedDB:', err))
+    // Create default record
+    this.db.settings.get({key: 'autosave'}).then(content => {
+      if (content.value) {
+        this.isLoading = true
+        zip.loadAsync(content.value).then(zipContents => {
+          zipContents.files['project.json'].async('uint8array').then(json => {
+            this.vm.loadProject(json)
+              .then(() => setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50))
+              .catch(() => console.warning('⚠️ Error loading autosave:', e))
+              .finally(() => this.isLoading = false)
+          })
+        })
+      }
+    })
   }
 
   /**
@@ -227,7 +207,7 @@ class Scratchmoar {
    */
   autosave = debounce(function () {
     this.vm.saveProjectSb3().then(content => {
-      this.db.settings.put({key: 'data', value: content})
+      this.db.settings.put({key: 'autosave', value: content})
         .catch(err => console.log('⚠️ Error autosaving:', err))
     })
   }, DEBOUNCE_TIME, {leading: false, trailing: true})

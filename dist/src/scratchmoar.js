@@ -648,12 +648,12 @@ const DEBOUNCE_TIME = 250;
         else if (Number.isInteger(+parts[1])) this.projectID = parts[2];
         else this.projectID = "autosave";
         // Bind to CTRL+S
-        document.addEventListener("keydown", (e)=>{
-            if (e.ctrlKey && e.key === "s") {
+        document.addEventListener("keydown", (e1)=>{
+            if (e1.ctrlKey && e1.key === "s") {
                 this.saveSnapshot();
                 if (this.platform === "turbowarp") {
-                    e.preventDefault();
-                    e.stopImmediatePropagation();
+                    e1.preventDefault();
+                    e1.stopImmediatePropagation();
                     return false;
                 }
             }
@@ -706,9 +706,7 @@ const DEBOUNCE_TIME = 250;
             this.isLoading = true;
             zip.loadAsync(snapshot.data).then((zipContents)=>{
                 zipContents.files["project.json"].async("uint8array").then((content)=>{
-                    this.vm.loadProject(content).then(()=>{
-                        document.dispatchEvent(new CustomEvent("scratchmoarLoadedProject"));
-                    }).catch((err)=>console.log("⚠️ Error loading project:", err)).finally(()=>this.isLoading = false);
+                    this.vm.loadProject(content).then(()=>document.dispatchEvent(new CustomEvent("scratchmoarLoadedProject"))).catch((err)=>console.log("⚠️ Error loading project:", err)).finally(()=>this.isLoading = false);
                 });
             });
         }).catch((err)=>console.log("⚠️ Error loading snapshot:", err));
@@ -716,45 +714,26 @@ const DEBOUNCE_TIME = 250;
     /**
    * Load autosave
    */ loadAutosave() {
-        this.db.open().then(()=>{
-        // this.db.settings.count().then(count => {
-        //   // Create default record
-        //   if (!count) {
-        //     this.db.settings.add({key: 'id', value: 'autosave'})
-        //   } else {
-        //     this.db.settings.get({key: 'id'}).then(record => {
-        //       if (record.value === this.projectID) {
-        //         this.db.settings.get({key: 'data'}).then(content => {
-        //           if (content.value) {
-        //             this.isLoading = true
-        //             zip.loadAsync(content.value).then(zipContents => {
-        //               zipContents.files['project.json'].async('uint8array').then(json => {
-        //                 try {
-        //                   this.vm.loadProject(json).then(() => {
-        //                     setTimeout(() => this.isLoading = false, DEBOUNCE_TIME + 50)
-        //                   })
-        //                 } catch (e) {
-        //                   this.isLoading = false
-        //                   console.warning('⚠️ Error loading autosave:', e)
-        //                 }
-        //               })
-        //             })
-        //           }
-        //         })
-        //       } else {
-        //         console.warning('Autosave ID and current project ID do not match. Skipping autoload')
-        //       }
-        //     })
-        //   }
-        // })
-        }).catch((err)=>console.log("⚠️ Error opening IndexedDB:", err));
+        // Create default record
+        this.db.settings.get({
+            key: "autosave"
+        }).then((content)=>{
+            if (content.value) {
+                this.isLoading = true;
+                zip.loadAsync(content.value).then((zipContents)=>{
+                    zipContents.files["project.json"].async("uint8array").then((json)=>{
+                        this.vm.loadProject(json).then(()=>setTimeout(()=>this.isLoading = false, DEBOUNCE_TIME + 50)).catch(()=>console.warning("⚠️ Error loading autosave:", e)).finally(()=>this.isLoading = false);
+                    });
+                });
+            }
+        });
     }
     /**
    * Autosaves every few moments
    */ autosave = (0, _lodash.debounce)(function() {
         this.vm.saveProjectSb3().then((content)=>{
             this.db.settings.put({
-                key: "data",
+                key: "autosave",
                 value: content
             }).catch((err)=>console.log("⚠️ Error autosaving:", err));
         });
@@ -9833,12 +9812,11 @@ exports.default = {
     setup (__props, { expose  }) {
         expose();
         const menu = (0, _vue.ref)(null);
-        const isVisible = (0, _vue.ref)(true);
+        const isVisible = (0, _vue.ref)(false);
         let selectedSnapshot = (0, _vue.ref)(null);
         let snapshots = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
             return (0, _snapshotsJsDefault.default).snapshots.toArray();
         })));
-        // <pre>{{ JSON.stringify(settings, null, 2) }}</pre>
         let settings = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
             return (0, _snapshotsJsDefault.default).settings.toArray();
         })));
