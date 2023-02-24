@@ -69,6 +69,9 @@ onMounted(() => {
   $menuItems.forEach($menuItem => {
     $menuItem.style.backgroundColor = styles.backgroundColor
   })
+
+  // Listeners
+  document.addEventListener('scratchmoarLoadedProject', () => isVisible.value = false)
 })
 
 /**
