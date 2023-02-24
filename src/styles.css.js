@@ -44,7 +44,7 @@ export default `
   max-height: 80%;
   border-radius: 0.5rem;
   padding: 1rem;
-  width: 600px;
+  width: 960px;
   max-width: 100%;
   overflow: auto;
 

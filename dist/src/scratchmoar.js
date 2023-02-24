@@ -573,6 +573,7 @@ const zip = new (0, _jszipDefault.default)();
 const DEBOUNCE_TIME = 250;
 /**
  * Scrtachmoar extension
+ * @todo Replace console.warning() and catch messages with Vue notifications
  */ class Scratchmoar {
     constructor(){
         this.vm = null // Virtual machine
@@ -665,13 +666,15 @@ const DEBOUNCE_TIME = 250;
         this.loadAutosave();
         document.addEventListener("scratchmoarResetDB", this.resetDB.bind(this));
         document.addEventListener("scratchmoarSaveSnapshot", this.saveSnapshot.bind(this));
+        document.addEventListener("scratchmoarLoadSnapshot", this.loadSnapshot.bind(this));
+        document.addEventListener("scratchmoarDeleteSnapshot", this.deleteSnapshot.bind(this));
         this.vm.on("PROJECT_CHANGED", ()=>this.autosave());
         console.log("\uD83E\uDDE9 Scratchmoar extension loaded!");
     }
     /**
    * Reset the database
    */ resetDB() {
-        this.db.autosave.clear();
+        this.db.settings.clear();
         this.db.snapshots.clear();
     }
     /**
@@ -681,23 +684,38 @@ const DEBOUNCE_TIME = 250;
             this.db.snapshots.add({
                 date: new Date(),
                 data: content
+            }).then((id)=>{
+                this.db.settings.put({
+                    key: "lastSnapshotID",
+                    value: id
+                });
             }).catch((err)=>console.log("⚠️ Error autosaving:", err));
         });
+    }
+    /**
+   * Delete a snapshot
+   */ deleteSnapshot(ev) {
+        this.db.snapshots.delete(ev.detail);
+    }
+    /**
+   * Load a snapshot
+   */ loadSnapshot(ev) {
+        console.log("Loading snapshot", ev.detail);
     }
     /**
    * Load autosave
    */ loadAutosave() {
         this.db.open().then(()=>{
-            this.db.autosave.count().then((count)=>{
+            this.db.settings.count().then((count)=>{
                 // Create default record
-                if (!count) this.db.autosave.add({
+                if (!count) this.db.settings.add({
                     key: "id",
                     value: "autosave"
                 });
-                else this.db.autosave.get({
+                else this.db.settings.get({
                     key: "id"
                 }).then((record)=>{
-                    if (record.value === this.projectID) this.db.autosave.get({
+                    if (record.value === this.projectID) this.db.settings.get({
                         key: "data"
                     }).then((content)=>{
                         if (content.value) {
@@ -725,7 +743,7 @@ const DEBOUNCE_TIME = 250;
    * Autosaves every few moments
    */ autosave = (0, _lodash.debounce)(function() {
         this.vm.saveProjectSb3().then((content)=>{
-            this.db.autosave.put({
+            this.db.settings.put({
                 key: "data",
                 value: content
             }).catch((err)=>console.log("⚠️ Error autosaving:", err));
@@ -9707,10 +9725,17 @@ const _hoisted_4 = {
 const _hoisted_5 = /*#__PURE__*/ (0, _vue.createElementVNode)("thead", null, [
     /*#__PURE__*/ (0, _vue.createElementVNode)("tr", null, [
         /*#__PURE__*/ (0, _vue.createElementVNode)("th", null, "Snapshot ID"),
-        /*#__PURE__*/ (0, _vue.createElementVNode)("th", null, "Created")
+        /*#__PURE__*/ (0, _vue.createElementVNode)("th", null, "Created"),
+        /*#__PURE__*/ (0, _vue.createElementVNode)("th", null, "Actions")
     ])
 ], -1 /* HOISTED */ );
-const _hoisted_6 = {
+const _hoisted_6 = [
+    "onClick"
+];
+const _hoisted_7 = [
+    "onClick"
+];
+const _hoisted_8 = {
     class: "scratchmoarPopupContentFooter"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -9740,13 +9765,24 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                                 }, [
                                     (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(snapshot.id), 1 /* TEXT */ ),
                                     (0, _vue.createCommentVNode)(" Display date in YY-MM-DD HH:MM format "),
-                                    (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, " ")), 1 /* TEXT */ )
+                                    (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, " ")), 1 /* TEXT */ ),
+                                    (0, _vue.createElementVNode)("td", null, [
+                                        (0, _vue.createElementVNode)("button", {
+                                            onClick: ($event)=>$setup.deleteSnapshot(snapshot.id)
+                                        }, "Delete", 8 /* PROPS */ , _hoisted_6),
+                                        (0, _vue.createElementVNode)("button", {
+                                            onClick: ($event)=>$setup.loadSnapshot(snapshot.id),
+                                            style: {
+                                                "float": "right"
+                                            }
+                                        }, "Load", 8 /* PROPS */ , _hoisted_7)
+                                    ])
                                 ]);
                             }), 128 /* KEYED_FRAGMENT */ ))
                         ])
                     ])
                 ]),
-                (0, _vue.createElementVNode)("div", _hoisted_6, [
+                (0, _vue.createElementVNode)("div", _hoisted_8, [
                     (0, _vue.createElementVNode)("button", {
                         onClick: _cache[2] || (_cache[2] = ($event)=>$setup.isVisible = false)
                     }, "Close"),
@@ -9792,6 +9828,10 @@ exports.default = {
         let snapshots = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
             return (0, _snapshotsJsDefault.default).snapshots.toArray();
         })));
+        // <pre>{{ JSON.stringify(settings, null, 2) }}</pre>
+        let settings = (0, _vue.ref)((0, _rxjs.useObservable)((0, _dexie.liveQuery)(()=>{
+            return (0, _snapshotsJsDefault.default).settings.toArray();
+        })));
         (0, _vue.onMounted)(()=>{
             // Add matching classes for styling purposes
             const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])');
@@ -9813,6 +9853,20 @@ exports.default = {
  */ function saveSnapshots() {
             document.dispatchEvent(new CustomEvent("scratchmoarSaveSnapshot"));
         }
+        /**
+ * Trigger a load snapshot event
+ */ function loadSnapshot(id) {
+            document.dispatchEvent(new CustomEvent("scratchmoarLoadSnapshot", {
+                detail: id
+            }));
+        }
+        /**
+ * Trigger a delete snapshot event
+ */ function deleteSnapshot(id) {
+            document.dispatchEvent(new CustomEvent("scratchmoarDeleteSnapshot", {
+                detail: id
+            }));
+        }
         const __returned__ = {
             menu,
             isVisible,
@@ -9828,8 +9882,16 @@ exports.default = {
             set snapshots (v){
                 snapshots = v;
             },
+            get settings () {
+                return settings;
+            },
+            set settings (v){
+                settings = v;
+            },
             clearSnapshots,
             saveSnapshots,
+            loadSnapshot,
+            deleteSnapshot,
             ref: (0, _vue.ref),
             onMounted: (0, _vue.onMounted),
             get Snapshots () {
@@ -9858,7 +9920,7 @@ var _dexieDefault = parcelHelpers.interopDefault(_dexie);
 const db = new (0, _dexieDefault.default)("scratchmoar");
 exports.default = db;
 db.version(1).stores({
-    autosave: "&key, value",
+    settings: "&key, value",
     snapshots: "++id, parentId, date, title, description, *tags"
 });
 
@@ -19302,7 +19364,7 @@ exports.default = `
   max-height: 80%;
   border-radius: 0.5rem;
   padding: 1rem;
-  width: 600px;
+  width: 960px;
   max-width: 100%;
   overflow: auto;
 
@@ -19360,8 +19422,8 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
 */ var Buffer = require("ce9f4562c5f1378").Buffer;
-var process = require("a3bd5d6f89efbfa4");
 var global = arguments[3];
+var process = require("a3bd5d6f89efbfa4");
 !function(e) {
     module.exports = e();
 }(function() {

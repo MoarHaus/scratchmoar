@@ -10,6 +10,7 @@ const DEBOUNCE_TIME = 250
 
 /**
  * Scrtachmoar extension
+ * @todo Replace console.warning() and catch messages with Vue notifications
  */
 class Scratchmoar {
   constructor () {
@@ -126,6 +127,8 @@ class Scratchmoar {
     this.loadAutosave()
     document.addEventListener('scratchmoarResetDB', this.resetDB.bind(this))
     document.addEventListener('scratchmoarSaveSnapshot', this.saveSnapshot.bind(this))
+    document.addEventListener('scratchmoarLoadSnapshot', this.loadSnapshot.bind(this))
+    document.addEventListener('scratchmoarDeleteSnapshot', this.deleteSnapshot.bind(this))
     this.vm.on('PROJECT_CHANGED', () => this.autosave())
 
     console.log('🧩 Scratchmoar extension loaded!')
@@ -135,7 +138,7 @@ class Scratchmoar {
    * Reset the database
    */
   resetDB () {
-    this.db.autosave.clear()
+    this.db.settings.clear()
     this.db.snapshots.clear()
   }
 
@@ -147,8 +150,24 @@ class Scratchmoar {
       this.db.snapshots.add({
         date: new Date(),
         data: content
+      }).then(id => {
+        this.db.settings.put({key: 'lastSnapshotID', value: id})
       }).catch(err => console.log('⚠️ Error autosaving:', err))
     })
+  }
+
+  /**
+   * Delete a snapshot
+   */
+  deleteSnapshot (ev) {
+    this.db.snapshots.delete(ev.detail)
+  }
+  
+  /**
+   * Load a snapshot
+   */
+  loadSnapshot (ev) {
+    console.log('Loading snapshot', ev.detail)
   }
 
   /**
@@ -156,14 +175,14 @@ class Scratchmoar {
    */
   loadAutosave () {
     this.db.open().then(() => {
-      this.db.autosave.count().then(count => {
+      this.db.settings.count().then(count => {
         // Create default record
         if (!count) {
-          this.db.autosave.add({key: 'id', value: 'autosave'})
+          this.db.settings.add({key: 'id', value: 'autosave'})
         } else {
-          this.db.autosave.get({key: 'id'}).then(record => {
+          this.db.settings.get({key: 'id'}).then(record => {
             if (record.value === this.projectID) {
-              this.db.autosave.get({key: 'data'}).then(content => {
+              this.db.settings.get({key: 'data'}).then(content => {
                 if (content.value) {
                   this.isLoading = true
                   zip.loadAsync(content.value).then(zipContents => {
@@ -194,7 +213,7 @@ class Scratchmoar {
    */
   autosave = debounce(function () {
     this.vm.saveProjectSb3().then(content => {
-      this.db.autosave.put({key: 'data', value: content})
+      this.db.settings.put({key: 'data', value: content})
         .catch(err => console.log('⚠️ Error autosaving:', err))
     })
   }, DEBOUNCE_TIME, {leading: false, trailing: true})

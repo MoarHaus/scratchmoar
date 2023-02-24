@@ -14,6 +14,7 @@
             <tr>
               <th>Snapshot ID</th>
               <th>Created</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -21,6 +22,10 @@
               <td>{{ snapshot.id }}</td>
               <!-- Display date in YY-MM-DD HH:MM format -->
               <td>{{ new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, ' ') }}</td>
+              <td>
+                <button @click="deleteSnapshot(snapshot.id)">Delete</button>
+                <button @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
+              </td>
             </tr>
           </tbody>
         </table>
@@ -48,6 +53,11 @@ let snapshots = ref(useObservable(liveQuery(() => {
   return Snapshots.snapshots.toArray()
 })))
 
+// <pre>{{ JSON.stringify(settings, null, 2) }}</pre>
+let settings = ref(useObservable(liveQuery(() => {
+  return Snapshots.settings.toArray()
+})))
+
 onMounted(() => {
   // Add matching classes for styling purposes
   const $menuItem = document.querySelector('[class*="menu-bar_menu-bar-item_"][class*="menu-bar_hoverable_"]:not([class*="menu-bar_language-menu_"])')
@@ -73,5 +83,19 @@ function clearSnapshots () {
  */
 function saveSnapshots () {
   document.dispatchEvent(new CustomEvent('scratchmoarSaveSnapshot'))
+}
+
+/**
+ * Trigger a load snapshot event
+ */
+function loadSnapshot (id) {
+  document.dispatchEvent(new CustomEvent('scratchmoarLoadSnapshot', { detail: id }))
+}
+
+/**
+ * Trigger a delete snapshot event
+ */
+function deleteSnapshot (id) {
+  document.dispatchEvent(new CustomEvent('scratchmoarDeleteSnapshot', { detail: id }))
 }
 </script>
