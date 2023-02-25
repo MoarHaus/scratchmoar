@@ -221,8 +221,23 @@ class Scratchmoar {
 
   /**
    * Load snapshots
+   * @todo Needs better error catching
    */
   loadSnapshots () {
+    const $btn = document.createElement('input')
+    $btn.type = 'file'
+    $btn.accept = '.json'
+    $btn.style.display = 'none'
+    
+    $btn.addEventListener('change', async () => {
+      const file = $btn.files[0]
+      this.db.import(file)
+      document.body.removeChild($btn)
+    })
+    document.body.appendChild($btn)
+    $btn.click()
+
+    // Read the file
     console.log('Load snapshots')
   }
 
