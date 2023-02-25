@@ -34,10 +34,10 @@
         </table>
       </div>
       <div class="scratchmoarPopupContentFooter">
-        <button @click="isVisible = false">Close</button>
-        <button @click="clearSnapshots()" style="margin-left: 2rem">Delete all snapshots</button>
+        <button @click="clearSnapshots()" >Delete all snapshots</button>
         <button @click="saveSnapshots()" style="float: right">Save new snapshot</button>
-        <button @click="saveSnapshots()" style="float: right; margin-right: .5rem">Download snapshots</button>
+        <button @click="downloadSnapshots()" style="float: right; margin-right: .5rem">Download snapshots file...</button>
+        <button @click="loadSnapshots()" style="float: right; margin-right: .5rem">Load snapshots file...</button>
       </div>
     </div>
   </div>
@@ -130,5 +130,20 @@ function deleteSnapshot (id) {
 function updateSnapshot (id) {
   document.dispatchEvent(new CustomEvent('scratchmoarUpdateSnapshot', { detail: id }))
   isVisible.value = false
+}
+
+/**
+ * Trigger a download snapshots event
+ */
+function downloadSnapshots () {
+  document.dispatchEvent(new CustomEvent('scratchmoarDownloadSnapshots'))
+}
+
+/**
+ * Trigger a load snapshots event
+ */
+function loadSnapshots () {
+  document.dispatchEvent(new CustomEvent('scratchmoarLoadSnapshots'))
+  // isVisible.value = false
 }
 </script>

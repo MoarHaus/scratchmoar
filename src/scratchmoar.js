@@ -4,6 +4,7 @@ import {createApp} from 'vue'
 import $STYLES from './styles.css.js'
 import App from './App.vue'
 import Snapshots from './store/snapshots.js'
+import {importDB, exportDB, importInto, peakImportFile} from 'dexie-export-import'
 
 const zip = new JSZip()
 const DEBOUNCE_TIME = 250
@@ -110,7 +111,6 @@ class Scratchmoar {
     // document.addEventListener('keydown', e => {
     //   if (e.ctrlKey && e.key === 's') {
     //     this.saveSnapshot()
-
     //     if (this.platform === 'turbowarp') {
     //       e.preventDefault()
     //       e.stopImmediatePropagation()
@@ -119,15 +119,6 @@ class Scratchmoar {
     //   }
     // }, true)
     
-    // Remove existing autosave UI
-    // if (this.platform === 'turbowarp') {
-    //   document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach(el => {
-    //     if (el.textContent === 'Save as...') {
-    //       el.parentNode.remove()
-    //     }
-    //   })
-    // }
-
     // Custom event listeners
     this.loadAutosave()
     document.addEventListener('scratchmoarResetDB', this.resetDB.bind(this))
@@ -135,6 +126,9 @@ class Scratchmoar {
     document.addEventListener('scratchmoarLoadSnapshot', this.loadSnapshot.bind(this))
     document.addEventListener('scratchmoarDeleteSnapshot', this.deleteSnapshot.bind(this))
     document.addEventListener('scratchmoarUpdateSnapshot', this.updateSnapshot.bind(this))
+    document.addEventListener('scratchmoarDownloadSnapshots', this.downloadSnapshots.bind(this))
+    document.addEventListener('scratchmoarLoadSnapshots', this.loadSnapshots.bind(this))
+
     this.vm.on('PROJECT_CHANGED', () => this.autosave())
 
     console.log('🧩 Scratchmoar extension loaded!')
@@ -205,6 +199,20 @@ class Scratchmoar {
         })
       })
     }).catch(err => console.log('⚠️ Error loading snapshot:', err))
+  }
+
+  /**
+   * Download snapshots
+   */
+  downloadSnapshots () {
+    console.log('Download snapshots')
+  }
+
+  /**
+   * Load snapshots
+   */
+  loadSnapshots () {
+    console.log('Load snapshots')
   }
 
   /**
