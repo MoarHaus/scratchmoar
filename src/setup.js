@@ -2,6 +2,7 @@ import App from './App.vue'
 import Snapshots from './store/snapshots.js'
 import $STYLES from './styles/main.css.js'
 import {createApp} from 'vue'
+import JSZip from 'jszip'
 
 export default {
   /**
@@ -19,6 +20,7 @@ export default {
     this.runtime = this.vm.runtime
     this.db = Snapshots
     globalThis.scratchmoar = this
+    this.zip = new JSZip()
     
     // Mount Vue
     this.app = createApp(App)

@@ -1,9 +1,9 @@
 import _SETUP from './setup.js'
 import _SAVING from './store/saving.js'
-import {debounce} from 'lodash'
-import JSZip from 'jszip'
+import _LOADING from './store/loading.js'
+import _DELETING from './store/deleting.js'
 
-const zip = new JSZip()
+import {debounce} from 'lodash'
 const DEBOUNCE_TIME = 250
 
 /**
@@ -12,6 +12,9 @@ const DEBOUNCE_TIME = 250
  */
 class Scratchmoar {
   constructor () {
+    // Constants
+    this.DEBOUNCE_TIME = DEBOUNCE_TIME
+    
     // Prop
     this.app = null // Vue app
     this.vm = null // scratch-gui Virtual Machine
@@ -28,110 +31,25 @@ class Scratchmoar {
     }
   }
   
+  // Setup
   setup () {_SETUP.setup.call(this)}
   scratchmoarNull () {return null}
   getInfo () {return _SETUP.getInfo.call(this)}
 
-  autosave = debounce(function () {_SAVING.autosave.call(this)}, DEBOUNCE_TIME, {leading: false, trailing: true})
+  // Saving
+  autosave = debounce(function () {_SAVING.autosave.call(this)}, this.DEBOUNCE_TIME, {leading: false, trailing: true})
   saveSnapshot () {_SAVING.saveSnapshot.call(this)}
   updateSnapshot (ev) {_SAVING.updateSnapshot.call(this, ev)}
   async downloadSnapshots () {await _SAVING.downloadSnapshots.call(this)}
 
-  /**
-   * Reset the database
-   */
-  resetDB () {
-    this.db.settings.clear()
-    this.db.snapshots.clear()
-  }
+  // Loading
+  loadSnapshot (ev) {_LOADING.loadSnapshot.call(this, ev)}
+  loadSnapshots () {_LOADING.loadSnapshots.call(this)}
+  loadAutosave () {_LOADING.loadAutosave.call(this)}
 
-  /**
-   * Delete a snapshot
-   */
-  deleteSnapshot (ev) {
-    this.db.snapshots.delete(ev.detail)
-  }
-  
-  /**
-   * Load a snapshot
-   */
-  loadSnapshot (ev) {
-    this.db.snapshots.get(ev.detail).then(snapshot => {
-      this.isLoading = true
-      this.db.settings.put({key: 'lastSnapshotID', value: snapshot.id})
-      
-      zip.loadAsync(snapshot.data).then(zipContents => {
-        zipContents.files['project.json'].async('uint8array').then(content => {
-          this.vm.loadProject(content)
-            .then(() => {
-              document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
-              document.querySelector(this.$selectors.projectTitle).value = snapshot.title || 'Untitled'
-            })
-            .catch(err => console.log('⚠️ Error loading project:', err))
-            .finally(() => this.isLoading = false)
-        })
-      })
-    }).catch(err => console.log('⚠️ Error loading snapshot:', err))
-  }
-
-  /**
-   * Load snapshots
-   * @todo Needs better error catching
-   */
-  loadSnapshots () {
-    const $btn = document.createElement('input')
-    $btn.type = 'file'
-    $btn.accept = '.json'
-    $btn.style.display = 'none'
-
-    $btn.addEventListener('change', async () => {
-      const file = $btn.files[0]
-      this.db.import(file)
-        .then(() => {
-          // Load last snapshot
-          this.db.settings.get({key: 'lastSnapshotID'}).then(snapshot => {
-            this.loadSnapshot({detail: snapshot.value})
-          })
-        })
-        .catch(err => console.log('⚠️ Error importing:', err))
-      document.body.removeChild($btn)
-    })
-    document.body.appendChild($btn)
-    $btn.click()
-
-    // Read the file
-    console.log('Load snapshots')
-  }
-
-  /**
-   * Load autosave
-   */
-  loadAutosave () {
-    // Create default record
-    this.db.settings.get({key: 'autosave'}).then(content => {
-      if (content.value) {
-        this.isLoading = true
-        zip.loadAsync(content.value).then(zipContents => {
-          zipContents.files['project.json'].async('uint8array').then(json => {
-            this.vm.loadProject(json)
-              .then(() => {
-                setTimeout(() => {
-                  this.isLoading = false
-                  this.db.settings.get({key: 'lastSnapshotID'}).then(snapshot => {
-                    this.db.snapshots.where('id').equals(snapshot.value).first().then(snapshot => {
-                      document.querySelector(this.$selectors.projectTitle).value = snapshot.title || 'Untitled'
-                    })
-                  })
-                }, DEBOUNCE_TIME + 50)
-              })
-              .catch(ev => console.warning('⚠️ Error loading autosave:', ev))
-              .finally(() => this.isLoading = false)
-          })
-        })
-      }
-    })
-  }
-
+  // Deleting
+  resetDB () {_DELETING.resetDB.call(this)}
+  deleteSnapshot (ev) {_DELETING.deleteSnapshot.call(this, ev)}
 }
 
 // Automatically add the extension if it's getting imported,
