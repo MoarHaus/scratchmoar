@@ -12,28 +12,32 @@
         <table>
           <thead>
             <tr>
-              <th>Snapshot ID</th>
-              <th>Created</th>
+              <th width="40px">ID</th>
+              <th width="100px">Title</th>
+              <th width="100px">Created</th>
               <th>Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr v-for="snapshot in snapshots" :key="snapshot.id" :class="{scratchmoarSelected: lastSnapshotID?.value === snapshot.id}">
+            <tr v-for="snapshot in snapshots" :key="snapshot.id" :class="{scratchmoarPositive: lastSnapshotID?.value === snapshot.id}">
               <td>{{ snapshot.id }}</td>
               <!-- Display date in YY-MM-DD HH:MM format -->
+              <td>{{ snapshot.title }}</td>
               <td>{{ new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, ' ') }}</td>
               <td>
-                <button @click="deleteSnapshot(snapshot.id)">Delete</button>
-                <button @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
+                <button class="scratchmoarNegative" @click="deleteSnapshot(snapshot.id)" style="margin-right: 2rem">Delete</button>
+                <button class="scratchmoarWarning" @click="updateSnapshot(snapshot.id)">Update</button>
+                <button class="scratchmoarInfo" @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <div class="scratchmoarPopupContentFooter">
-        <button @click="isVisible = false">Close</button>
-        <button @click="clearSnapshots()" style="margin-left: 2rem">Delete all snapshots</button>
-        <button @click="saveSnapshots()" style="float: right">Save snapshot</button>
+        <button class="scratchmoarNegative" @click="clearSnapshots()" >Delete all snapshots</button>
+        <button class="scratchmoarInfo" @click="saveSnapshots()" style="float: right">Save new snapshot</button>
+        <button class="scratchmoarPositive" @click="downloadSnapshots()" style="float: right; margin-right: .5rem">Download snapshots file</button>
+        <button class="scratchmoarWarning" @click="loadSnapshots()" style="float: right; margin-right: .5rem">Load snapshots file...</button>
       </div>
     </div>
   </div>
@@ -118,5 +122,29 @@ function loadSnapshot (id) {
  */
 function deleteSnapshot (id) {
   document.dispatchEvent(new CustomEvent('scratchmoarDeleteSnapshot', { detail: id }))
+}
+
+/**
+ * Trigger an update snapshot event
+ */
+function updateSnapshot (id) {
+  document.dispatchEvent(new CustomEvent('scratchmoarUpdateSnapshot', { detail: id }))
+  isVisible.value = false
+}
+
+/**
+ * Trigger a download snapshots event
+ */
+function downloadSnapshots () {
+  document.dispatchEvent(new CustomEvent('scratchmoarDownloadSnapshots'))
+  isVisible.value = false
+}
+
+/**
+ * Trigger a load snapshots event
+ */
+function loadSnapshots () {
+  document.dispatchEvent(new CustomEvent('scratchmoarLoadSnapshots'))
+  // isVisible.value = false
 }
 </script>

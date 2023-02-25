@@ -89,7 +89,16 @@ export default `
   background: #eeea
 }
 
-.scratchmoarSelected {
-  background: #0a04;
+.scratchmoarInfo {
+  background: #00a9;
+}
+.scratchmoarPositive {
+  background: #0a09;
+}
+.scratchmoarWarning {
+  background: #f809;
+}
+.scratchmoarNegative {
+  background: #f009;
 }
 `
