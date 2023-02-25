@@ -19,25 +19,25 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="snapshot in snapshots" :key="snapshot.id" :class="{scratchmoarSelected: lastSnapshotID?.value === snapshot.id}">
+            <tr v-for="snapshot in snapshots" :key="snapshot.id" :class="{scratchmoarPositive: lastSnapshotID?.value === snapshot.id}">
               <td>{{ snapshot.id }}</td>
               <!-- Display date in YY-MM-DD HH:MM format -->
               <td>{{ snapshot.title }}</td>
               <td>{{ new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, ' ') }}</td>
               <td>
-                <button @click="deleteSnapshot(snapshot.id)" style="margin-right: 2rem">Delete</button>
-                <button @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
-                <button @click="updateSnapshot(snapshot.id)" style="float: right; margin-right: .5rem;">Update</button>
+                <button class="scratchmoarNegative" @click="deleteSnapshot(snapshot.id)" style="margin-right: 2rem">Delete</button>
+                <button class="scratchmoarWarning" @click="updateSnapshot(snapshot.id)">Update</button>
+                <button class="scratchmoarInfo" @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
       <div class="scratchmoarPopupContentFooter">
-        <button @click="clearSnapshots()" >Delete all snapshots</button>
-        <button @click="saveSnapshots()" style="float: right">Save new snapshot</button>
-        <button @click="downloadSnapshots()" style="float: right; margin-right: .5rem">Download snapshots file</button>
-        <button @click="loadSnapshots()" style="float: right; margin-right: .5rem">Load snapshots file...</button>
+        <button class="scratchmoarNegative" @click="clearSnapshots()" >Delete all snapshots</button>
+        <button class="scratchmoarInfo" @click="saveSnapshots()" style="float: right">Save new snapshot</button>
+        <button class="scratchmoarPositive" @click="downloadSnapshots()" style="float: right; margin-right: .5rem">Download snapshots file</button>
+        <button class="scratchmoarWarning" @click="loadSnapshots()" style="float: right; margin-right: .5rem">Load snapshots file...</button>
       </div>
     </div>
   </div>

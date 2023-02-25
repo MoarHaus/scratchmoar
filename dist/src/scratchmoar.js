@@ -763,7 +763,16 @@ const DEBOUNCE_TIME = 250;
         $btn.style.display = "none";
         $btn.addEventListener("change", async ()=>{
             const file = $btn.files[0];
-            this.db.import(file);
+            this.db.import(file).then(()=>{
+                // Load last snapshot
+                this.db.settings.get({
+                    key: "lastSnapshotID"
+                }).then((snapshot)=>{
+                    this.loadSnapshot({
+                        detail: snapshot.value
+                    });
+                });
+            }).catch((err)=>console.log("⚠️ Error importing:", err));
             document.body.removeChild($btn);
         });
         document.body.appendChild($btn);
@@ -829,8 +838,8 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
-*/ var global = arguments[3];
-var process = require("a3bd5d6f89efbfa4");
+*/ var process = require("a3bd5d6f89efbfa4");
+var global = arguments[3];
 var Buffer = require("ce9f4562c5f1378").Buffer;
 !function(e) {
     module.exports = e();
@@ -28978,8 +28987,17 @@ exports.default = `
   background: #eeea
 }
 
-.scratchmoarSelected {
-  background: #0a04;
+.scratchmoarInfo {
+  background: #00a9;
+}
+.scratchmoarPositive {
+  background: #0a09;
+}
+.scratchmoarWarning {
+  background: #f809;
+}
+.scratchmoarNegative {
+  background: #f009;
 }
 `;
 
@@ -38625,7 +38643,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                                 return (0, _vue.openBlock)(), (0, _vue.createElementBlock)("tr", {
                                     key: snapshot.id,
                                     class: (0, _vue.normalizeClass)({
-                                        scratchmoarSelected: $setup.lastSnapshotID?.value === snapshot.id
+                                        scratchmoarPositive: $setup.lastSnapshotID?.value === snapshot.id
                                     })
                                 }, [
                                     (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(snapshot.id), 1 /* TEXT */ ),
@@ -38634,24 +38652,23 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                                     (0, _vue.createElementVNode)("td", null, (0, _vue.toDisplayString)(new Date(snapshot.date).toLocaleString().slice(0, -2).replace(/:\d{2}\s/, " ")), 1 /* TEXT */ ),
                                     (0, _vue.createElementVNode)("td", null, [
                                         (0, _vue.createElementVNode)("button", {
+                                            class: "scratchmoarNegative",
                                             onClick: ($event)=>$setup.deleteSnapshot(snapshot.id),
                                             style: {
                                                 "margin-right": "2rem"
                                             }
                                         }, "Delete", 8 /* PROPS */ , _hoisted_6),
                                         (0, _vue.createElementVNode)("button", {
+                                            class: "scratchmoarWarning",
+                                            onClick: ($event)=>$setup.updateSnapshot(snapshot.id)
+                                        }, "Update", 8 /* PROPS */ , _hoisted_7),
+                                        (0, _vue.createElementVNode)("button", {
+                                            class: "scratchmoarInfo",
                                             onClick: ($event)=>$setup.loadSnapshot(snapshot.id),
                                             style: {
                                                 "float": "right"
                                             }
-                                        }, "Load", 8 /* PROPS */ , _hoisted_7),
-                                        (0, _vue.createElementVNode)("button", {
-                                            onClick: ($event)=>$setup.updateSnapshot(snapshot.id),
-                                            style: {
-                                                "float": "right",
-                                                "margin-right": ".5rem"
-                                            }
-                                        }, "Update", 8 /* PROPS */ , _hoisted_8)
+                                        }, "Load", 8 /* PROPS */ , _hoisted_8)
                                     ])
                                 ], 2 /* CLASS */ );
                             }), 128 /* KEYED_FRAGMENT */ ))
@@ -38660,15 +38677,18 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                 ]),
                 (0, _vue.createElementVNode)("div", _hoisted_9, [
                     (0, _vue.createElementVNode)("button", {
+                        class: "scratchmoarNegative",
                         onClick: _cache[2] || (_cache[2] = ($event)=>$setup.clearSnapshots())
                     }, "Delete all snapshots"),
                     (0, _vue.createElementVNode)("button", {
+                        class: "scratchmoarInfo",
                         onClick: _cache[3] || (_cache[3] = ($event)=>$setup.saveSnapshots()),
                         style: {
                             "float": "right"
                         }
                     }, "Save new snapshot"),
                     (0, _vue.createElementVNode)("button", {
+                        class: "scratchmoarPositive",
                         onClick: _cache[4] || (_cache[4] = ($event)=>$setup.downloadSnapshots()),
                         style: {
                             "float": "right",
@@ -38676,6 +38696,7 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                         }
                     }, "Download snapshots file"),
                     (0, _vue.createElementVNode)("button", {
+                        class: "scratchmoarWarning",
                         onClick: _cache[5] || (_cache[5] = ($event)=>$setup.loadSnapshots()),
                         style: {
                             "float": "right",
@@ -38723,9 +38744,9 @@ parcelHelpers.export(exports, "importInto", ()=>importInto);
 parcelHelpers.export(exports, "peakImportFile", ()=>peakImportFile);
 var _dexie = require("dexie");
 var _dexieDefault = parcelHelpers.interopDefault(_dexie);
+var Buffer = require("8b40999d4029427d").Buffer;
 var process = require("b4802fe6c20349f6");
 var global = arguments[3];
-var Buffer = require("8b40999d4029427d").Buffer;
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
