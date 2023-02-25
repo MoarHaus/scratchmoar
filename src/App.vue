@@ -137,6 +137,7 @@ function updateSnapshot (id) {
  */
 function downloadSnapshots () {
   document.dispatchEvent(new CustomEvent('scratchmoarDownloadSnapshots'))
+  isVisible.value = false
 }
 
 /**
