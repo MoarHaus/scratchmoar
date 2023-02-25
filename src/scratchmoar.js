@@ -204,8 +204,19 @@ class Scratchmoar {
   /**
    * Download snapshots
    */
-  downloadSnapshots () {
-    console.log('Download snapshots')
+  async downloadSnapshots () {
+    const blob = await exportDB(this.db)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const title = document.querySelector(this.$selectors.projectTitle).value
+    const date = new Date().toISOString().split('T')
+    
+    a.href = url
+    a.download = `${date[0]}-${title}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 
   /**

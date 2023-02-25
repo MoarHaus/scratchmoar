@@ -36,7 +36,7 @@
       <div class="scratchmoarPopupContentFooter">
         <button @click="clearSnapshots()" >Delete all snapshots</button>
         <button @click="saveSnapshots()" style="float: right">Save new snapshot</button>
-        <button @click="downloadSnapshots()" style="float: right; margin-right: .5rem">Download snapshots file...</button>
+        <button @click="downloadSnapshots()" style="float: right; margin-right: .5rem">Download snapshots file</button>
         <button @click="loadSnapshots()" style="float: right; margin-right: .5rem">Load snapshots file...</button>
       </div>
     </div>
