@@ -4,7 +4,9 @@ import {createApp} from 'vue'
 import $STYLES from './styles.css.js'
 import App from './App.vue'
 import Snapshots from './store/snapshots.js'
-import {importDB, exportDB, importInto, peakImportFile} from 'dexie-export-import'
+import {exportDB} from 'dexie-export-import'
+
+import _SAVING from './store/saving.js'
 
 const zip = new JSZip()
 const DEBOUNCE_TIME = 250
@@ -15,6 +17,7 @@ const DEBOUNCE_TIME = 250
  */
 class Scratchmoar {
   constructor () {
+    // Prop
     this.app = null // Vue app
     this.vm = null // scratch-gui Virtual Machine
     this.runtime = null // The Scratch Blocks extention runtime
@@ -23,6 +26,7 @@ class Scratchmoar {
     this.projectID = null // Project ID from URL
     this.isLoading = false // Flag used to prevent autosave loops
 
+    // Selectors
     this.$selectors = {
       projectTitle: 'input[class*="project-title-input_title-field_"]',
       menubarPortal: '[class*="menu-bar_account-info-group_"]'
@@ -106,18 +110,6 @@ class Scratchmoar {
     } else {
       this.projectID = 'autosave'
     }
-
-    // Bind to CTRL+S
-    // document.addEventListener('keydown', e => {
-    //   if (e.ctrlKey && e.key === 's') {
-    //     this.saveSnapshot()
-    //     if (this.platform === 'turbowarp') {
-    //       e.preventDefault()
-    //       e.stopImmediatePropagation()
-    //       return false
-    //     }
-    //   }
-    // }, true)
     
     // Custom event listeners
     this.loadAutosave()
@@ -142,35 +134,9 @@ class Scratchmoar {
     this.db.snapshots.clear()
   }
 
-  /**
-   * Save a snapshot
-   */
-  saveSnapshot () {
-    this.vm.saveProjectSb3().then(content => {
-      this.db.snapshots.add({
-        title: document.querySelector(this.$selectors.projectTitle).value,
-        date: new Date(),
-        data: content
-      }).then(id => {
-        this.db.settings.put({key: 'lastSnapshotID', value: id})
-      }).catch(err => console.log('⚠️ Error autosaving:', err))
-    })
-  }
-
-  /**
-   * Update a snapshot
-   */
-  updateSnapshot (ev) {
-    this.vm.saveProjectSb3().then(content => {
-      console.log('🧩 Updating snapshot', ev.detail)
-      this.db.snapshots.update(ev.detail, {
-        updated: new Date(),
-        data: content
-      }).then(id => {
-        this.db.settings.put({key: 'lastSnapshotID', value: ev.detail})
-      }).catch(err => console.log('⚠️ Error autosaving:', err, ev))
-    })
-  }
+  autosave = debounce(function () {_SAVING.autosave.call(this)}, DEBOUNCE_TIME, {leading: false, trailing: true})
+  saveSnapshot () {_SAVING.saveSnapshot.call(this)}
+  updateSnapshot (ev) {_SAVING.updateSnapshot.call(this, ev)}
 
   /**
    * Delete a snapshot
@@ -277,15 +243,6 @@ class Scratchmoar {
     })
   }
 
-  /**
-   * Autosaves every few moments
-   */
-  autosave = debounce(function (a, b, c) {
-    this.vm.saveProjectSb3().then(content => {
-      this.db.settings.put({key: 'autosave', value: content})
-        .catch(err => console.log('⚠️ Error autosaving:', err))
-    })
-  }, DEBOUNCE_TIME, {leading: false, trailing: true})
 }
 
 // Automatically add the extension if it's getting imported,
