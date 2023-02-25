@@ -1,3 +1,5 @@
+import {exportDB} from 'dexie-export-import'
+
 export default {
   /**
    * Autosaves every few moments
@@ -37,5 +39,23 @@ export default {
         this.db.settings.put({key: 'lastSnapshotID', value: ev.detail})
       }).catch(err => console.log('⚠️ Error autosaving:', err, ev))
     })
+  },
+
+  /**
+   * Download snapshots
+   */
+  async downloadSnapshots () {
+    const blob = await exportDB(this.db)
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    const title = document.querySelector(this.$selectors.projectTitle).value
+    const date = new Date().toISOString().split('T')
+    
+    a.href = url
+    a.download = `${date[0]}-${title}.json`
+    document.body.appendChild(a)
+    a.click()
+    document.body.removeChild(a)
+    URL.revokeObjectURL(url)
   }
 }
