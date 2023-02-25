@@ -27,6 +27,7 @@
               <td>
                 <button @click="deleteSnapshot(snapshot.id)" style="margin-right: 2rem">Delete</button>
                 <button @click="loadSnapshot(snapshot.id)" style="float: right">Load</button>
+                <button @click="updateSnapshot(snapshot.id)" style="float: right; margin-right: .5rem;">Update</button>
               </td>
             </tr>
           </tbody>
@@ -36,6 +37,7 @@
         <button @click="isVisible = false">Close</button>
         <button @click="clearSnapshots()" style="margin-left: 2rem">Delete all snapshots</button>
         <button @click="saveSnapshots()" style="float: right">Save new snapshot</button>
+        <button @click="saveSnapshots()" style="float: right; margin-right: .5rem">Download snapshots</button>
       </div>
     </div>
   </div>
@@ -120,5 +122,13 @@ function loadSnapshot (id) {
  */
 function deleteSnapshot (id) {
   document.dispatchEvent(new CustomEvent('scratchmoarDeleteSnapshot', { detail: id }))
+}
+
+/**
+ * Trigger an update snapshot event
+ */
+function updateSnapshot (id) {
+  document.dispatchEvent(new CustomEvent('scratchmoarUpdateSnapshot', { detail: id }))
+  isVisible.value = false
 }
 </script>

@@ -576,21 +576,23 @@ const DEBOUNCE_TIME = 250;
  * @todo Replace console.warning() and catch messages with Vue notifications
  */ class Scratchmoar {
     constructor(){
-        this.vm = null // Virtual machine
-        ;
-        this.runtime = null // Runtime
-        ;
-        this.db = null // Database
-        ;
         this.app = null // Vue app
         ;
-        this.platform = null // Platform (scratch, turbowarp)
+        this.vm = null // scratch-gui Virtual Machine
+        ;
+        this.runtime = null // The Scratch Blocks extention runtime
+        ;
+        this.db = null // IndexedDB Database
+        ;
+        this.platform = null // Platform type ("scratch" for scratch.mit.edu, "turbowarp" assumes ?extension= support)
         ;
         this.projectID = null // Project ID from URL
         ;
-        this.isLoading = false;
+        this.isLoading = false // Flag used to prevent autosave loops
+        ;
         this.$selectors = {
-            projectTitle: 'input[class*="project-title-input_title-field_"]'
+            projectTitle: 'input[class*="project-title-input_title-field_"]',
+            menubarPortal: '[class*="menu-bar_account-info-group_"]'
         };
     }
     /**
@@ -629,7 +631,7 @@ const DEBOUNCE_TIME = 250;
         globalThis.scratchmoar = this;
         // Mount Vue
         this.app = (0, _vue.createApp)((0, _appVueDefault.default));
-        this.app.mount('[class*="menu-bar_account-info-group_"]');
+        this.app.mount(this.$selectors.menubarPortal);
         // Manually add styles
         const $styles = document.createElement("style");
         $styles.innerHTML = (0, _stylesCssJsDefault.default);
@@ -662,15 +664,20 @@ const DEBOUNCE_TIME = 250;
         //   }
         // }, true)
         // Remove existing autosave UI
-        if (this.platform === "turbowarp") document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach((el)=>{
-            el.textContent;
-        });
+        // if (this.platform === 'turbowarp') {
+        //   document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach(el => {
+        //     if (el.textContent === 'Save as...') {
+        //       el.parentNode.remove()
+        //     }
+        //   })
+        // }
         // Custom event listeners
         this.loadAutosave();
         document.addEventListener("scratchmoarResetDB", this.resetDB.bind(this));
         document.addEventListener("scratchmoarSaveSnapshot", this.saveSnapshot.bind(this));
         document.addEventListener("scratchmoarLoadSnapshot", this.loadSnapshot.bind(this));
         document.addEventListener("scratchmoarDeleteSnapshot", this.deleteSnapshot.bind(this));
+        document.addEventListener("scratchmoarUpdateSnapshot", this.updateSnapshot.bind(this));
         this.vm.on("PROJECT_CHANGED", ()=>this.autosave());
         console.log("\uD83E\uDDE9 Scratchmoar extension loaded!");
     }
@@ -694,6 +701,22 @@ const DEBOUNCE_TIME = 250;
                     value: id
                 });
             }).catch((err)=>console.log("⚠️ Error autosaving:", err));
+        });
+    }
+    /**
+   * Update a snapshot
+   */ updateSnapshot(ev) {
+        this.vm.saveProjectSb3().then((content)=>{
+            console.log("\uD83E\uDDE9 Updating snapshot", ev.detail);
+            this.db.snapshots.update(ev.detail, {
+                updated: new Date(),
+                data: content
+            }).then((id)=>{
+                this.db.settings.put({
+                    key: "lastSnapshotID",
+                    value: ev.detail
+                });
+            }).catch((err)=>console.log("⚠️ Error autosaving:", err, ev));
         });
     }
     /**
@@ -742,7 +765,7 @@ const DEBOUNCE_TIME = 250;
                                     });
                                 });
                             }, DEBOUNCE_TIME + 50);
-                        }).catch(()=>console.warning("⚠️ Error loading autosave:", e)).finally(()=>this.isLoading = false);
+                        }).catch((ev)=>console.warning("⚠️ Error loading autosave:", ev)).finally(()=>this.isLoading = false);
                     });
                 });
             }
@@ -779,8 +802,8 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
 */ var Buffer = require("ce9f4562c5f1378").Buffer;
-var process = require("a3bd5d6f89efbfa4");
 var global = arguments[3];
+var process = require("a3bd5d6f89efbfa4");
 !function(e) {
     module.exports = e();
 }(function() {
@@ -29029,6 +29052,14 @@ exports.default = {
                 detail: id
             }));
         }
+        /**
+ * Trigger an update snapshot event
+ */ function updateSnapshot(id) {
+            document.dispatchEvent(new CustomEvent("scratchmoarUpdateSnapshot", {
+                detail: id
+            }));
+            isVisible.value = false;
+        }
         const __returned__ = {
             vm,
             menu,
@@ -29056,6 +29087,7 @@ exports.default = {
             saveSnapshots,
             loadSnapshot,
             deleteSnapshot,
+            updateSnapshot,
             ref: (0, _vue.ref),
             onMounted: (0, _vue.onMounted),
             getCurrentInstance: (0, _vue.getCurrentInstance),
@@ -38521,7 +38553,10 @@ const _hoisted_6 = [
 const _hoisted_7 = [
     "onClick"
 ];
-const _hoisted_8 = {
+const _hoisted_8 = [
+    "onClick"
+];
+const _hoisted_9 = {
     class: "scratchmoarPopupContentFooter"
 };
 function render(_ctx, _cache, $props, $setup, $data, $options) {
@@ -38568,14 +38603,21 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                                             style: {
                                                 "float": "right"
                                             }
-                                        }, "Load", 8 /* PROPS */ , _hoisted_7)
+                                        }, "Load", 8 /* PROPS */ , _hoisted_7),
+                                        (0, _vue.createElementVNode)("button", {
+                                            onClick: ($event)=>$setup.updateSnapshot(snapshot.id),
+                                            style: {
+                                                "float": "right",
+                                                "margin-right": ".5rem"
+                                            }
+                                        }, "Update", 8 /* PROPS */ , _hoisted_8)
                                     ])
                                 ], 2 /* CLASS */ );
                             }), 128 /* KEYED_FRAGMENT */ ))
                         ])
                     ])
                 ]),
-                (0, _vue.createElementVNode)("div", _hoisted_8, [
+                (0, _vue.createElementVNode)("div", _hoisted_9, [
                     (0, _vue.createElementVNode)("button", {
                         onClick: _cache[2] || (_cache[2] = ($event)=>$setup.isVisible = false)
                     }, "Close"),
@@ -38590,7 +38632,14 @@ function render(_ctx, _cache, $props, $setup, $data, $options) {
                         style: {
                             "float": "right"
                         }
-                    }, "Save new snapshot")
+                    }, "Save new snapshot"),
+                    (0, _vue.createElementVNode)("button", {
+                        onClick: _cache[5] || (_cache[5] = ($event)=>$setup.saveSnapshots()),
+                        style: {
+                            "float": "right",
+                            "margin-right": ".5rem"
+                        }
+                    }, "Download snapshots")
                 ])
             ])
         ], 2 /* CLASS */ )

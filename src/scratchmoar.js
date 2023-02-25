@@ -14,16 +14,17 @@ const DEBOUNCE_TIME = 250
  */
 class Scratchmoar {
   constructor () {
-    this.vm = null // Virtual machine
-    this.runtime = null // Runtime
-    this.db = null // Database
     this.app = null // Vue app
-    this.platform = null // Platform (scratch, turbowarp)
+    this.vm = null // scratch-gui Virtual Machine
+    this.runtime = null // The Scratch Blocks extention runtime
+    this.db = null // IndexedDB Database
+    this.platform = null // Platform type ("scratch" for scratch.mit.edu, "turbowarp" assumes ?extension= support)
     this.projectID = null // Project ID from URL
-    this.isLoading = false
+    this.isLoading = false // Flag used to prevent autosave loops
 
     this.$selectors = {
       projectTitle: 'input[class*="project-title-input_title-field_"]',
+      menubarPortal: '[class*="menu-bar_account-info-group_"]'
     }
   }
   
@@ -73,7 +74,7 @@ class Scratchmoar {
     
     // Mount Vue
     this.app = createApp(App)
-    this.app.mount('[class*="menu-bar_account-info-group_"]')
+    this.app.mount(this.$selectors.menubarPortal)
     
     // Manually add styles
     const $styles = document.createElement('style')
@@ -119,13 +120,13 @@ class Scratchmoar {
     // }, true)
     
     // Remove existing autosave UI
-    if (this.platform === 'turbowarp') {
-      document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach(el => {
-        if (el.textContent === 'Save as...') {
-          // el.parentNode.remove()
-        }
-      })
-    }
+    // if (this.platform === 'turbowarp') {
+    //   document.querySelectorAll('[class*="menu_menu-item_"] > span')?.forEach(el => {
+    //     if (el.textContent === 'Save as...') {
+    //       el.parentNode.remove()
+    //     }
+    //   })
+    // }
 
     // Custom event listeners
     this.loadAutosave()
@@ -133,6 +134,7 @@ class Scratchmoar {
     document.addEventListener('scratchmoarSaveSnapshot', this.saveSnapshot.bind(this))
     document.addEventListener('scratchmoarLoadSnapshot', this.loadSnapshot.bind(this))
     document.addEventListener('scratchmoarDeleteSnapshot', this.deleteSnapshot.bind(this))
+    document.addEventListener('scratchmoarUpdateSnapshot', this.updateSnapshot.bind(this))
     this.vm.on('PROJECT_CHANGED', () => this.autosave())
 
     console.log('🧩 Scratchmoar extension loaded!')
@@ -158,6 +160,21 @@ class Scratchmoar {
       }).then(id => {
         this.db.settings.put({key: 'lastSnapshotID', value: id})
       }).catch(err => console.log('⚠️ Error autosaving:', err))
+    })
+  }
+
+  /**
+   * Update a snapshot
+   */
+  updateSnapshot (ev) {
+    this.vm.saveProjectSb3().then(content => {
+      console.log('🧩 Updating snapshot', ev.detail)
+      this.db.snapshots.update(ev.detail, {
+        updated: new Date(),
+        data: content
+      }).then(id => {
+        this.db.settings.put({key: 'lastSnapshotID', value: ev.detail})
+      }).catch(err => console.log('⚠️ Error autosaving:', err, ev))
     })
   }
 
@@ -211,7 +228,7 @@ class Scratchmoar {
                   })
                 }, DEBOUNCE_TIME + 50)
               })
-              .catch(() => console.warning('⚠️ Error loading autosave:', e))
+              .catch(ev => console.warning('⚠️ Error loading autosave:', ev))
               .finally(() => this.isLoading = false)
           })
         })
