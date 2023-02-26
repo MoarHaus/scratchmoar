@@ -20,7 +20,6 @@ export default {
     this.runtime = this.vm.runtime
     this.db = Snapshots
     globalThis.scratchmoar = this
-    this.zip = new JSZip()
 
     // Mount Vue
     this.app = createApp(App)

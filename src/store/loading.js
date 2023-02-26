@@ -16,7 +16,7 @@ export default {
         zip.generateAsync({type: 'arraybuffer'}).then(data => {
           this.vm.loadProject(data).then(() => {
             document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
-            this.setProjectTitle(autosave.value.title)
+            this.setTitle(autosave.value.title)
           })
         })
       }
@@ -27,22 +27,14 @@ export default {
    * Load a snapshot
    */
   loadSnapshot (ev) {
-    // this.db.snapshots.get(ev.detail).then(snapshot => {
-    //   this.isLoading = true
-    //   this.db.settings.put({key: 'lastSnapshotID', value: snapshot.id})
-      
-    //   this.zip.loadAsync(snapshot.data).then(zipContents => {
-    //     zipContents.files['project.json'].async('uint8array').then(content => {
-    //       this.vm.loadProject(content)
-    //         .then(() => {
-    //           document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
-    //           document.querySelector(this.$selectors.projectTitle).value = snapshot.title || 'Untitled'
-    //         })
-    //         .catch(err => console.log('⚠️ Error loading project:', err))
-    //         .finally(() => this.isLoading = false)
-    //     })
-    //   })
-    // }).catch(err => console.log('⚠️ Error loading snapshot:', err))
+    this.db.snapshots.get(ev.detail).then(snapshot => {
+      this.isLoading = true
+      this.db.settings.put({key: 'lastSnapshotID', value: snapshot.id}).catch(this.log)
+      this.vm.loadProject(snapshot.data).then(() => {
+        document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
+        this.setTitle(snapshot.title)
+      })
+    }).catch(this.log)
   },
 
   /**

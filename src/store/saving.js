@@ -11,7 +11,7 @@ export default {
     const files = this.vm.saveProjectSb3DontZip()
     this.isSaving = true
     this.db.settings.put({key: 'autosave', value: {
-      title: document.querySelector(this.$selectors.projectTitle).value,
+      title: this.getTitle(),
       date: new Date(),
       files
     }}).finally(() => {
@@ -22,33 +22,26 @@ export default {
   /**
    * Save a snapshot
    * - Take last autosave and recursively add each file/asset to zip
+   *  (we'll do this manually so we can use same loading mechanism)
    * - Save zip to indexedDB
    */
   saveSnapshot () {
     const zip = new JSZip()
+    const files = this.vm.saveProjectSb3DontZip()
     this.isSaving = true
-    this.db.settings.get({key: 'autosave'}).then(autosave => {
-      if (autosave.value) {
-        const zip = new JSZip()
-        Object.keys(autosave.value.files).forEach(key => zip.file(key, autosave.value.files[key]))
 
-        zip.generateAsync({type: 'arraybuffer'}).then(data => {})
-      }
-    }).catch(err => {
-      // @fixme Use notification
-      this.log('⚠️ Error saving snapshot:', err)
-      this.isSaving = false
+    Object.keys(files).forEach(key => zip.file(key, files[key]))
+    zip.generateAsync({type: 'arraybuffer'}).then(data => {
+      this.db.snapshots.add({
+        title: this.getTitle(),
+        date: new Date(),
+        data
+      }).then(id => {
+        this.db.settings.put({key: 'lastSnapshotID', value: id}).catch(this.log)
+      })
+      .catch(this.log)
+      .finally(() => this.isSaving = false)
     })
-    
-    // this.vm.saveProjectSb3().then(content => {
-    //   this.db.snapshots.add({
-    //     title: document.querySelector(this.$selectors.projectTitle).value,
-    //     date: new Date(),
-    //     data: content
-    //   }).then(id => {
-    //     this.db.settings.put({key: 'lastSnapshotID', value: id})
-    //   }).catch(err => console.log('⚠️ Error autosaving:', err))
-    // })
   },
  
   /**
@@ -73,7 +66,7 @@ export default {
     const blob = await exportDB(this.db)
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
-    const title = document.querySelector(this.$selectors.projectTitle).value
+    const title = this.getTitle()
     const date = new Date().toISOString().split('T')
     
     a.href = url

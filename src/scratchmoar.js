@@ -32,6 +32,9 @@ class Scratchmoar {
     }
   }
   
+  // @fixme - This seemed like a good idea at first,
+  // but it can introduce bugs if method signatures change
+
   // Setup
   setup () {_SETUP.setup.call(this)}
   scratchmoarNull () {return null}
@@ -53,7 +56,8 @@ class Scratchmoar {
   deleteSnapshot (ev) {_DELETING.deleteSnapshot.call(this, ev)}
 
   // Misc
-  setProjectTitle (title = 'Untitled') {document.querySelector(this.$selectors.projectTitle).value = title}
+  setTitle (title = 'Untitled') {document.querySelector(this.$selectors.projectTitle).value = title}
+  getTitle (def = 'Untitled') {return document.querySelector(this.$selectors.projectTitle).value || def}
   log () {console.log(...arguments)}
 }
 
