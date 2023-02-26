@@ -2,6 +2,7 @@ import _SETUP from './setup.js'
 import _SAVING from './store/saving.js'
 import _LOADING from './store/loading.js'
 import _DELETING from './store/deleting.js'
+import AssetType from 'scratch-storage/src/AssetType.js'
 
 import {debounce} from 'lodash'
 const DEBOUNCE_TIME = 250
@@ -14,6 +15,7 @@ class Scratchmoar {
   constructor () {
     // Constants
     this.DEBOUNCE_TIME = DEBOUNCE_TIME
+    this.ASSET_TYPES = AssetType
     
     // Prop
     this.app = null // Vue app
@@ -51,6 +53,9 @@ class Scratchmoar {
   // Deleting
   resetDB () {_DELETING.resetDB.call(this)}
   deleteSnapshot (ev) {_DELETING.deleteSnapshot.call(this, ev)}
+
+  // Misc
+  setProjectTitle (title = 'Untitled') {document.querySelector(this.$selectors.projectTitle).value = title}
 }
 
 // Automatically add the extension if it's getting imported,

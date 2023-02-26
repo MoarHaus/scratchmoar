@@ -21,7 +21,7 @@ export default {
     this.db = Snapshots
     globalThis.scratchmoar = this
     this.zip = new JSZip()
-    
+
     // Mount Vue
     this.app = createApp(App)
     this.app.mount(this.$selectors.menubarPortal)
