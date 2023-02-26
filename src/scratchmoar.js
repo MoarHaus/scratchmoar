@@ -2,7 +2,6 @@ import _SETUP from './setup.js'
 import _SAVING from './store/saving.js'
 import _LOADING from './store/loading.js'
 import _DELETING from './store/deleting.js'
-import AssetType from 'scratch-storage/src/AssetType.js'
 
 import {debounce} from 'lodash'
 const DEBOUNCE_TIME = 250
@@ -15,7 +14,6 @@ class Scratchmoar {
   constructor () {
     // Constants
     this.DEBOUNCE_TIME = DEBOUNCE_TIME
-    this.ASSET_TYPES = AssetType
     
     // Prop
     this.app = null // Vue app
@@ -25,6 +23,7 @@ class Scratchmoar {
     this.platform = null // Platform type ("scratch" for scratch.mit.edu, "turbowarp" assumes ?extension= support)
     this.projectID = null // Project ID from URL
     this.isLoading = false // Flag used to prevent autosave loops
+    this.isSaving = false // Flag used to prevent autosave loops
 
     // Selectors
     this.$selectors = {
@@ -48,7 +47,6 @@ class Scratchmoar {
   loadSnapshot (ev) {_LOADING.loadSnapshot.call(this, ev)}
   loadSnapshots () {_LOADING.loadSnapshots.call(this)}
   loadAutosave () {_LOADING.loadAutosave.call(this)}
-  getAssetType (fileName) {return _LOADING.getAssetType.call(this, fileName)}
 
   // Deleting
   resetDB () {_DELETING.resetDB.call(this)}
@@ -56,6 +54,7 @@ class Scratchmoar {
 
   // Misc
   setProjectTitle (title = 'Untitled') {document.querySelector(this.$selectors.projectTitle).value = title}
+  log () {console.log(...arguments)}
 }
 
 // Automatically add the extension if it's getting imported,

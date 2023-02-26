@@ -67,6 +67,7 @@ export default {
     document.addEventListener('scratchmoarDownloadSnapshots', this.downloadSnapshots.bind(this))
     document.addEventListener('scratchmoarLoadSnapshots', this.loadSnapshots.bind(this))
 
+    document.addEventListener('scratchmoarLoadedProject', () => this.isLoading = false)
     this.vm.on('PROJECT_CHANGED', () => this.autosave())
 
     console.log('🧩 Scratchmoar extension loaded!')
