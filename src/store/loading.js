@@ -42,24 +42,24 @@ export default {
    * @todo Needs better error catching
    */
   loadSnapshots () {
-    // const $btn = document.createElement('input')
-    // $btn.type = 'file'
-    // $btn.accept = '.json'
-    // $btn.style.display = 'none'
+    const $btn = document.createElement('input')
+    $btn.type = 'file'
+    $btn.accept = '.json'
+    $btn.style.display = 'none'
 
-    // $btn.addEventListener('change', async () => {
-    //   const file = $btn.files[0]
-    //   this.db.import(file)
-    //     .then(() => {
-    //       // Load last snapshot
-    //       this.db.settings.get({key: 'lastSnapshotID'}).then(snapshot => {
-    //         this.loadSnapshot({detail: snapshot.value})
-    //       })
-    //     })
-    //     .catch(err => console.log('⚠️ Error importing:', err))
-    //   document.body.removeChild($btn)
-    // })
-    // document.body.appendChild($btn)
-    // $btn.click()
+    $btn.addEventListener('change', async () => {
+      const file = $btn.files[0]
+      this.db.import(file)
+        .then(() => {
+          // Load last snapshot
+          this.db.settings.get({key: 'lastSnapshotID'}).then(snapshot => {
+            this.loadSnapshot({detail: snapshot.value})
+          })
+        })
+        .catch(err => console.log('⚠️ Error importing:', err))
+      document.body.removeChild($btn)
+    })
+    document.body.appendChild($btn)
+    $btn.click()
   }
 }
