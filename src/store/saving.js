@@ -48,15 +48,22 @@ export default {
    * Update a snapshot
    */
   updateSnapshot (ev) {
-    // this.vm.saveProjectSb3().then(content => {
-    //   console.log('🧩 Updating snapshot', ev.detail)
-    //   this.db.snapshots.update(ev.detail, {
-    //     updated: new Date(),
-    //     data: content
-    //   }).then(id => {
-    //     this.db.settings.put({key: 'lastSnapshotID', value: ev.detail})
-    //   }).catch(err => console.log('⚠️ Error autosaving:', err, ev))
-    // })
+    const zip = new JSZip()
+    const files = this.vm.saveProjectSb3DontZip()
+    Object.keys(files).forEach(key => zip.file(key, files[key]))
+    this.db.settings.put({key: 'lastSnapshotID', value: ev.detail}).catch(this.log)
+
+    zip.generateAsync({type: 'arraybuffer'}).then(data => {
+      this.isSaving = true
+      this.db.snapshots.update(ev.detail, {
+        title: this.getTitle(),
+        updated: new Date(),
+        data
+      })
+        .then(() => this.autosave())
+        .catch(this.log)
+        .finally(() => this.isSaving = false)
+    }).catch(this.log)
   },
 
   /**
