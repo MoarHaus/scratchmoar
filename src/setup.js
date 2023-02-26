@@ -45,6 +45,7 @@ export default {
         this.platform = 'turbowarp'
     }
 
+    // @todo This should be added to db so that we can have multiple projects too!
     // Scratch: /projects/ID
     if (parts[1] === 'projects') {
       this.projectID = parts[2]

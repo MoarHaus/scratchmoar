@@ -46,6 +46,7 @@ class Scratchmoar {
   loadSnapshot (ev) {_LOADING.loadSnapshot.call(this, ev)}
   loadSnapshots () {_LOADING.loadSnapshots.call(this)}
   loadAutosave () {_LOADING.loadAutosave.call(this)}
+  getAssetType (fileName) {return _LOADING.getAssetType.call(this, fileName)}
 
   // Deleting
   resetDB () {_DELETING.resetDB.call(this)}
