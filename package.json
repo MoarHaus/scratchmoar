@@ -1,6 +1,6 @@
 {
   "name": "scratchmoar",
-  "version": "0.0.9",
+  "version": "0.0.11",
   "description": "Scratch Blocks extension that'll add local storage, devlog pages, Notion backend, scratchblocks coding, realtime collab, and Ai editing tools",
   "main": "dist/scratchmoar.js",
   "scripts": {
@@ -37,6 +37,7 @@
     "lodash": "^4.17.21",
     "rollup": "^3.18.0",
     "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-replace": "^2.2.0",
     "rollup-plugin-vue": "^6.0.0",
     "rxjs": "^7.8.0",
     "vue": "^3.2.47"

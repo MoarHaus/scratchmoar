@@ -2,6 +2,7 @@ const {nodeResolve} = require('@rollup/plugin-node-resolve')
 const commonjs = require('@rollup/plugin-commonjs')
 const {babel} = require('@rollup/plugin-babel')
 const vue = require('rollup-plugin-vue')
+const replace = require('rollup-plugin-replace')
 
 module.exports = [
   {
@@ -15,6 +16,9 @@ module.exports = [
 
     plugins: [
       vue(),
+      replace({
+        'process.env.NODE_ENV': JSON.stringify( 'production' )
+      }),
       babel({
         babelHelpers: 'runtime',
         plugins: [
