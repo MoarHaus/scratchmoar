@@ -1,23 +1,22 @@
 {
   "name": "scratchmoar",
-  "version": "0.0.2",
+  "version": "0.0.9",
   "description": "Scratch Blocks extension that'll add local storage, devlog pages, Notion backend, scratchblocks coding, realtime collab, and Ai editing tools",
-  "source": "src/scratchmoar.js",
   "main": "dist/scratchmoar.js",
   "scripts": {
     "start": "parcel --port 8000 src/scratchmoar.js index.html",
-    "build": "parcel build"
+    "build": "rollup --environment INCLUDE_DEPS,BUILD:production --config"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Moooar/scratchmoar.git"
+    "url": "git+https://github.com/ozramos/scratchmoar.git"
   },
-  "author": "zenmoar <oz@zenmoar.com>",
+  "author": "Oz Ramos <git@heyozramos.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/Moooar/scratchmoar/issues"
+    "url": "https://github.com/ozramos/scratchmoar/issues"
   },
-  "homepage": "https://github.com/Moooar/scratchmoar#readme",
+  "homepage": "https://github.com/ozramos/scratchmoar#readme",
   "devDependencies": {
     "@parcel/transformer-vue": "^2.8.3",
     "buffer": "^5.7.1",
@@ -25,11 +24,20 @@
     "process": "^0.11.10"
   },
   "dependencies": {
+    "@babel/core": "^7.21.0",
+    "@babel/plugin-proposal-optional-chaining": "^7.21.0",
+    "@babel/plugin-transform-runtime": "^7.21.0",
+    "@rollup/plugin-babel": "^6.0.3",
+    "@rollup/plugin-commonjs": "^24.0.1",
+    "@rollup/plugin-node-resolve": "^15.0.1",
     "@vueuse/rxjs": "^9.13.0",
     "dexie": "^3.2.3",
     "dexie-export-import": "^4.0.6",
     "jszip": "^3.10.1",
     "lodash": "^4.17.21",
+    "rollup": "^3.18.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-vue": "^6.0.0",
     "rxjs": "^7.8.0",
     "vue": "^3.2.47"
   }
