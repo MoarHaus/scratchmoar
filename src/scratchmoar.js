@@ -23,6 +23,7 @@ class Scratchmoar {
     this.platform = null // Platform type ("scratch" for scratch.mit.edu, "turbowarp" assumes ?extension= support)
     this.projectID = null // Project ID from URL
     this.isLoading = false // Flag used to prevent autosave loops
+    this.finishedLoading = false // Flag used to prevent autosave loops
     this.isSaving = false // Flag used to prevent autosave loops
 
     // Selectors

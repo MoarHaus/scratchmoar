@@ -8,8 +8,9 @@ export default {
     if (this.isLoading || this.isSaving) return
     
     this.isLoading = true
+    this.finishedLoading = false // This gets reset in ./saving.js autosaving
     this.db.settings.get({key: 'autosave'}).then(autosave => {
-      if (autosave.value) {
+      if (autosave?.value) {
         const zip = new JSZip()
         Object.keys(autosave.value.files).forEach(key => zip.file(key, autosave.value.files[key]))
 
@@ -17,10 +18,12 @@ export default {
           this.vm.loadProject(data).then(() => {
             document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'))
             this.setTitle(autosave.value.title)
-          })
+          }).catch(this.log)
         })
       }
     })
+    .catch(this.log)
+    .finally(() => this.isLoading = false)
   },
 
   /**

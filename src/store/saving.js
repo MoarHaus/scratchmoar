@@ -7,6 +7,10 @@ export default {
    */
   autosave () {
     if (this.isLoading || this.isSaving) return
+    if (!this.finishedLoading) {
+      this.finishedLoading = true
+      return
+    }
 
     const files = this.vm.saveProjectSb3DontZip()
     this.isSaving = true
@@ -14,7 +18,9 @@ export default {
       title: this.getTitle(),
       date: new Date(),
       files
-    }}).finally(() => {
+    }})
+    .catch(this.log)
+    .finally(() => {
       this.isSaving = false
     })
   },

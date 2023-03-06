@@ -591,6 +591,8 @@ const DEBOUNCE_TIME = 250;
         ;
         this.isLoading = false // Flag used to prevent autosave loops
         ;
+        this.finishedLoading = false // Flag used to prevent autosave loops
+        ;
         this.isSaving = false // Flag used to prevent autosave loops
         ;
         // Selectors
@@ -24419,6 +24421,10 @@ exports.default = {
    * Autosaves every few moments
    */ autosave () {
         if (this.isLoading || this.isSaving) return;
+        if (!this.finishedLoading) {
+            this.finishedLoading = true;
+            return;
+        }
         const files = this.vm.saveProjectSb3DontZip();
         this.isSaving = true;
         this.db.settings.put({
@@ -24428,7 +24434,7 @@ exports.default = {
                 date: new Date(),
                 files
             }
-        }).finally(()=>{
+        }).catch(this.log).finally(()=>{
             this.isSaving = false;
         });
     },
@@ -24521,9 +24527,9 @@ parcelHelpers.export(exports, "importInto", ()=>importInto);
 parcelHelpers.export(exports, "peakImportFile", ()=>peakImportFile);
 var _dexie = require("dexie");
 var _dexieDefault = parcelHelpers.interopDefault(_dexie);
-var Buffer = require("8b40999d4029427d").Buffer;
 var global = arguments[3];
 var process = require("b4802fe6c20349f6");
+var Buffer = require("8b40999d4029427d").Buffer;
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation.
 
@@ -28853,10 +28859,12 @@ exports.default = {
    */ loadAutosave () {
         if (this.isLoading || this.isSaving) return;
         this.isLoading = true;
+        this.finishedLoading = false // This gets reset in ./saving.js autosaving
+        ;
         this.db.settings.get({
             key: "autosave"
         }).then((autosave)=>{
-            if (autosave.value) {
+            if (autosave?.value) {
                 const zip = new (0, _jszipDefault.default)();
                 Object.keys(autosave.value.files).forEach((key)=>zip.file(key, autosave.value.files[key]));
                 zip.generateAsync({
@@ -28865,10 +28873,10 @@ exports.default = {
                     this.vm.loadProject(data).then(()=>{
                         document.dispatchEvent(new CustomEvent("scratchmoarLoadedProject"));
                         this.setTitle(autosave.value.title);
-                    });
+                    }).catch(this.log);
                 });
             }
-        });
+        }).catch(this.log).finally(()=>this.isLoading = false);
     },
     /**
    * Load a snapshot
