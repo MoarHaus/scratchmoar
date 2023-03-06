@@ -1,6 +1,6 @@
 {
   "name": "scratchmoar",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "description": "Scratch Blocks extension that'll add local storage, devlog pages, Notion backend, scratchblocks coding, realtime collab, and Ai editing tools",
   "main": "dist/scratchmoar.js",
   "scripts": {

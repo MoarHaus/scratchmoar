@@ -29386,6 +29386,10 @@
        */
       autosave() {
         if (this.isLoading || this.isSaving) return;
+        if (!this.finishedLoading) {
+          this.finishedLoading = true;
+          return;
+        }
         const files = this.vm.saveProjectSb3DontZip();
         this.isSaving = true;
         this.db.settings.put({
@@ -29395,7 +29399,7 @@
             date: new Date(),
             files
           }
-        }).finally(() => {
+        }).catch(this.log).finally(() => {
           this.isSaving = false;
         });
       },
@@ -29472,10 +29476,11 @@
       loadAutosave() {
         if (this.isLoading || this.isSaving) return;
         this.isLoading = true;
+        this.finishedLoading = false; // This gets reset in ./saving.js autosaving
         this.db.settings.get({
           key: 'autosave'
         }).then(autosave => {
-          if (autosave.value) {
+          if (autosave !== null && autosave !== void 0 && autosave.value) {
             const zip = new lib();
             Object.keys(autosave.value.files).forEach(key => zip.file(key, autosave.value.files[key]));
             zip.generateAsync({
@@ -29484,10 +29489,10 @@
               this.vm.loadProject(data).then(() => {
                 document.dispatchEvent(new CustomEvent('scratchmoarLoadedProject'));
                 this.setTitle(autosave.value.title);
-              });
+              }).catch(this.log);
             });
           }
-        });
+        }).catch(this.log).finally(() => this.isLoading = false);
       },
       /**
        * Load a snapshot
@@ -39049,6 +39054,7 @@
         this.platform = null; // Platform type ("scratch" for scratch.mit.edu, "turbowarp" assumes ?extension= support)
         this.projectID = null; // Project ID from URL
         this.isLoading = false; // Flag used to prevent autosave loops
+        this.finishedLoading = false; // Flag used to prevent autosave loops
         this.isSaving = false; // Flag used to prevent autosave loops
 
         // Selectors

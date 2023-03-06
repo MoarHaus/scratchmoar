@@ -19506,9 +19506,9 @@ Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/js
 
 JSZip uses the library pako released under the MIT license :
 https://github.com/nodeca/pako/blob/main/LICENSE
-*/ var global = arguments[3];
+*/ var Buffer = require("ce9f4562c5f1378").Buffer;
+var global = arguments[3];
 var process = require("a3bd5d6f89efbfa4");
-var Buffer = require("ce9f4562c5f1378").Buffer;
 !function(e) {
     module.exports = e();
 }(function() {
